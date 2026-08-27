@@ -3,18 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Operations & Multi-Seller Management — ShopMarkets</title>
+  <title>Admin & Seller Operations Console — ShopMarkets</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=8">
   <style>
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin: 30px 0; }
-    .metric-card { background: var(--bg-surface); border: 1px solid var(--border-color); padding: 24px; border-radius: var(--radius-md); }
-    .metric-card .label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
-    .metric-card .num { font-size: 1.8rem; font-weight: 800; }
-    .data-table-wrap { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow-x: auto; padding: 24px; margin-bottom: 40px; }
-    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; }
-    th, td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); }
-    th { font-weight: 800; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); }
+    .admin-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin: 32px 0;
+    }
+    .metric-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .metric-info .label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    .metric-info .val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .metric-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    /* Filter & Controls Toolbar */
+    .admin-toolbar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .status-tab-group {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+    }
+    .status-filter-btn {
+      background: var(--bg-muted);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: var(--transition-fast);
+    }
+    .status-filter-btn.active, .status-filter-btn:hover {
+      background: var(--accent-secondary);
+      color: #ffffff;
+      border-color: var(--accent-secondary);
+    }
+
+    /* Order Table */
+    .admin-table-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+      margin-bottom: 60px;
+    }
+    table.orders-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    table.orders-table th {
+      padding: 16px 20px;
+      background: var(--bg-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+    table.orders-table td {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    table.orders-table tr:hover td {
+      background: var(--bg-card-hover);
+    }
+
+    /* Action Dropdown & Status Badges */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .status-processing { background: rgba(37, 99, 235, 0.1); color: var(--accent-primary); }
+    .status-shipped { background: rgba(245, 158, 11, 0.12); color: var(--status-warning); }
+    .status-delivered { background: rgba(16, 185, 129, 0.12); color: var(--status-success); }
+
+    .status-select-action {
+      background: var(--bg-muted);
+      border: 1px solid var(--border-color);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      cursor: pointer;
+      outline: none;
+    }
+
+    /* Modal Inspection Box */
+    .items-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .item-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-color);
+      padding: 4px 8px;
+      border-radius: var(--radius-xs);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -28,74 +173,312 @@
           <span class="brand-tag">Operations Console</span>
         </div>
       </a>
-      <a href="index.html" class="btn-hero-primary" style="padding: 8px 18px; font-size: 0.85rem;"><i class="fas fa-store"></i> Live Storefront</a>
+      <div style="display: flex; gap: 14px; align-items: center;">
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--status-success); background: rgba(16,185,129,0.1); padding: 6px 12px; border-radius: var(--radius-pill);">
+          <i class="fas fa-circle" style="font-size: 0.55rem;"></i> Firestore Real-Time Stream
+        </span>
+        <a href="index.html" class="btn-hero-primary" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fas fa-store"></i> Live Store</a>
+      </div>
     </div>
   </header>
 
   <main class="container">
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="label">Gross Merchandise Value</div>
-        <div class="num" id="metricGMV">₹24,890</div>
+    <section class="admin-metrics-grid">
+      <div class="metric-box">
+        <div class="metric-info">
+          <div class="label">Gross Revenue (GMV)</div>
+          <div class="val" id="metricGMV">₹0</div>
+        </div>
+        <div class="metric-icon-wrap" style="background: rgba(37,99,235,0.1); color: var(--accent-primary);">
+          <i class="fas fa-wallet"></i>
+        </div>
       </div>
-      <div class="metric-card">
-        <div class="label">Active Dispatch Orders</div>
-        <div class="num" id="metricOrders">1</div>
+
+      <div class="metric-box">
+        <div class="metric-info">
+          <div class="label">Total Cloud Orders</div>
+          <div class="val" id="metricTotalOrders">0</div>
+        </div>
+        <div class="metric-icon-wrap" style="background: rgba(16,185,129,0.1); color: var(--status-success);">
+          <i class="fas fa-boxes-packing"></i>
+        </div>
       </div>
-      <div class="metric-card">
-        <div class="label">Verified Sellers</div>
-        <div class="num">2</div>
+
+      <div class="metric-box">
+        <div class="metric-info">
+          <div class="label">Pending Dispatch</div>
+          <div class="val" id="metricPendingOrders">0</div>
+        </div>
+        <div class="metric-icon-wrap" style="background: rgba(245,158,11,0.1); color: var(--status-warning);">
+          <i class="fas fa-truck-ramp-box"></i>
+        </div>
       </div>
-      <div class="metric-card">
-        <div class="label">Catalog SKU Count</div>
-        <div class="num">6</div>
+
+      <div class="metric-box">
+        <div class="metric-info">
+          <div class="label">Active Catalog SKUs</div>
+          <div class="val" id="metricSKUs">6</div>
+        </div>
+        <div class="metric-icon-wrap" style="background: rgba(15,23,42,0.08); color: var(--text-primary);">
+          <i class="fas fa-layer-group"></i>
+        </div>
+      </div>
+    </section>
+
+    <div class="admin-toolbar">
+      <div class="status-tab-group">
+        <button class="status-filter-btn active" onclick="filterTable('all', this)">All Orders</button>
+        <button class="status-filter-btn" onclick="filterTable('processing', this)">Processing Dispatch</button>
+        <button class="status-filter-btn" onclick="filterTable('shipped', this)">Shipped</button>
+        <button class="status-filter-btn" onclick="filterTable('delivered', this)">Delivered</button>
+      </div>
+      <div>
+        <input type="text" id="orderSearchInput" placeholder="Search by Order ID, Phone or Name..." style="padding: 8px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; width: 280px; outline: none;" oninput="handleAdminSearch(this.value)">
       </div>
     </div>
 
-    <!-- Live Orders Table -->
-    <div class="data-table-wrap">
-      <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 16px;">Real-Time Dispatch Pipeline</h3>
-      <table>
+    <div class="admin-table-container">
+      <table class="orders-table">
         <thead>
           <tr>
-            <th>Order ID</th>
-            <th>Customer Address</th>
-            <th>Value</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>Order Ref & Date</th>
+            <th>Customer Information</th>
+            <th>Purchased Items</th>
+            <th>Order Value & Mode</th>
+            <th>Live Status</th>
+            <th>Workflow Action</th>
           </tr>
         </thead>
-        <tbody id="adminLiveOrdersTbody"></tbody>
+        <tbody id="adminLiveOrdersTbody">
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">
+              <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
+              <div>Connecting to Firebase Firestore Real-Time Orders...</div>
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </main>
 
+  <div class="modal-overlay" id="orderInspectModal">
+    <div class="modal-content-card" style="max-width: 650px;">
+      <button class="modal-close-btn" onclick="closeModal('orderInspectModal')"><i class="fas fa-xmark"></i></button>
+      <div id="orderInspectBody" style="padding: 32px;"></div>
+    </div>
+  </div>
+
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="products.js"></script>
-  <script src="app.js?v=6"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const orders = JSON.parse(localStorage.getItem('sm_customer_orders')) || [];
-      const gmv = orders.reduce((acc, o) => acc + (o.total || 0), 0);
+  <script src="app.js?v=8"></script>
+
+  <script type="module">
+    import { db, collection, onSnapshot, query, orderBy, doc, updateDoc } from "./firebase-config.js";
+
+    let GLOBAL_ORDERS = [];
+    let CURRENT_STATUS_FILTER = 'all';
+
+    // Real-Time Listener from Firestore
+    function listenToOrders() {
+      const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+
+      onSnapshot(q, (snapshot) => {
+        const cloudOrders = [];
+        snapshot.forEach((docSnap) => {
+          cloudOrders.push({ docId: docSnap.id, ...docSnap.data() });
+        });
+
+        GLOBAL_ORDERS = cloudOrders;
+        renderAdminUI();
+      }, (error) => {
+        console.warn("Firestore listener fallback to localStorage:", error);
+        GLOBAL_ORDERS = JSON.parse(localStorage.getItem('sm_customer_orders')) || [];
+        renderAdminUI();
+      });
+    }
+
+    function renderAdminUI() {
+      // 1. Calculate Live Metrics
+      const totalOrders = GLOBAL_ORDERS.length;
+      const gmv = GLOBAL_ORDERS.reduce((acc, o) => acc + (o.total || 0), 0);
+      const pending = GLOBAL_ORDERS.filter(o => !o.status || o.status.toLowerCase().includes('processing') || o.status.toLowerCase().includes('confirmed')).length;
+
       document.getElementById('metricGMV').innerText = `₹${gmv.toLocaleString()}`;
-      document.getElementById('metricOrders').innerText = orders.length;
+      document.getElementById('metricTotalOrders').innerText = totalOrders;
+      document.getElementById('metricPendingOrders').innerText = pending;
+
+      // 2. Filter Table
+      let filtered = GLOBAL_ORDERS;
+      if (CURRENT_STATUS_FILTER !== 'all') {
+        filtered = filtered.filter(o => (o.status || '').toLowerCase().includes(CURRENT_STATUS_FILTER));
+      }
+
+      const searchVal = document.getElementById('orderSearchInput').value.toLowerCase().trim();
+      if (searchVal) {
+        filtered = filtered.filter(o => 
+          (o.orderId || '').toLowerCase().includes(searchVal) ||
+          (o.customerName || '').toLowerCase().includes(searchVal) ||
+          (o.customerPhone || '').includes(searchVal)
+        );
+      }
 
       const tbody = document.getElementById('adminLiveOrdersTbody');
-      if (orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No live orders currently.</td></tr>`;
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 40px;">No matching customer orders found.</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = orders.map(o => `
-        <tr>
-          <td><strong>#${o.orderId}</strong></td>
-          <td>${o.address || 'Address on file'}</td>
-          <td>₹${o.total.toLocaleString()}</td>
-          <td><span style="color: var(--accent-primary); font-weight: 700;">${o.status}</span></td>
-          <td><button onclick="showToast('Courier airway bill generated!')" style="background:var(--bg-muted); padding:4px 10px; border-radius:4px; font-weight:700; font-size:0.75rem;">Generate AWB</button></td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = filtered.map(o => {
+        const statusLower = (o.status || 'processing').toLowerCase();
+        let statusClass = 'status-processing';
+        if (statusLower.includes('shipped') || statusLower.includes('transit')) statusClass = 'status-shipped';
+        if (statusLower.includes('delivered')) statusClass = 'status-delivered';
+
+        const itemsList = Array.isArray(o.items) ? o.items : [];
+
+        return `
+          <tr>
+            <td>
+              <strong style="font-size:0.95rem; color: var(--accent-primary);">#${o.orderId || 'SM-PENDING'}</strong>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${o.date || 'Recent'}</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">${o.trackingNumber || 'DEL-Air'}</div>
+            </td>
+            <td>
+              <div style="font-weight: 700;">${o.customerName || 'Adnan Shah'}</div>
+              <div style="font-size:0.78rem; color:var(--text-muted);"><i class="fas fa-phone" style="font-size:0.7rem;"></i> ${o.customerPhone || '+91 On File'}</div>
+              <div style="font-size:0.75rem; color:var(--text-secondary); max-width:220px; line-height:1.3; margin-top:3px;">
+                ${o.address || 'Address provided during checkout'}
+              </div>
+            </td>
+            <td>
+              <div class="items-chip-list">
+                ${itemsList.slice(0, 2).map(i => `
+                  <span class="item-chip">
+                    <img src="${i.img || (i.images && i.images[0]) || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}" style="width:18px; height:18px; border-radius:3px; object-fit:cover;">
+                    ${i.title} <strong>(x${i.qty || 1})</strong>
+                  </span>
+                `).join('')}
+                ${itemsList.length > 2 ? `<span class="item-chip">+${itemsList.length - 2} more</span>` : ''}
+              </div>
+              <button onclick="inspectOrder('${o.docId || o.orderId}')" style="font-size:0.75rem; color:var(--accent-primary); font-weight:700; margin-top:6px; cursor:pointer;">
+                <i class="fas fa-eye"></i> View Full Details
+              </button>
+            </td>
+            <td>
+              <div style="font-weight: 800; font-size: 1rem;">₹${(o.total || 0).toLocaleString()}</div>
+              <span style="font-size:0.72rem; color:var(--text-muted); font-weight:700;">${o.paymentMode || 'Cash on Delivery'}</span>
+            </td>
+            <td>
+              <span class="status-pill ${statusClass}">
+                <i class="fas fa-circle" style="font-size:0.5rem;"></i> ${o.status || 'Processing'}
+              </span>
+            </td>
+            <td>
+              <select class="status-select-action" onchange="changeLiveStatus('${o.docId}', this.value)">
+                <option value="" disabled selected>Update Status</option>
+                <option value="Confirmed & Packed">Confirmed & Packed</option>
+                <option value="Shipped & In Transit">Shipped & In Transit</option>
+                <option value="Out for Delivery">Out for Delivery</option>
+                <option value="Delivered Successfully">Delivered Successfully</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Live Status Update directly to Firestore
+    window.changeLiveStatus = async function(docId, newStatus) {
+      if (!docId || docId === 'undefined') {
+        showToast("Local preview order updated!");
+        return;
+      }
+
+      try {
+        showToast(`Updating Order status to "${newStatus}"...`, "fa-cloud-arrow-up");
+        const orderRef = doc(db, "orders", docId);
+        await updateDoc(orderRef, { 
+          status: newStatus 
+        });
+        showToast(`Order status updated to "${newStatus}" in Cloud Firestore!`);
+      } catch (err) {
+        console.error("Status update error:", err);
+        showToast("Failed to update status in Cloud", "fa-circle-xmark");
+      }
+    };
+
+    // Filter and Search Helpers
+    window.filterTable = function(status, btn) {
+      document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      CURRENT_STATUS_FILTER = status;
+      renderAdminUI();
+    };
+
+    window.handleAdminSearch = function(val) {
+      renderAdminUI();
+    };
+
+    // Inspect Order Popup
+    window.inspectOrder = function(id) {
+      const order = GLOBAL_ORDERS.find(o => o.docId === id || o.orderId === id);
+      if (!order) return;
+
+      const modalBody = document.getElementById('orderInspectBody');
+      const items = Array.isArray(order.items) ? order.items : [];
+
+      modalBody.innerHTML = `
+        <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px;">
+          <span style="font-size:0.75rem; font-weight:800; color:var(--accent-primary); text-transform:uppercase;">Verified Order Details</span>
+          <h2 style="font-size: 1.35rem; font-weight: 800; margin-top:4px;">Order #${order.orderId}</h2>
+          <div style="font-size: 0.85rem; color: var(--text-muted);">Placed on: ${order.date || 'Recent'} | Air Tracking: <strong>${order.trackingNumber || 'DEL-84920194IN'}</strong></div>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <h4 style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px;">Customer & Delivery Information</h4>
+          <div style="background: var(--bg-muted); padding: 14px; border-radius: var(--radius-sm); font-size: 0.88rem; line-height: 1.5;">
+            <div><strong>Name:</strong> ${order.customerName || 'N/A'}</div>
+            <div><strong>Phone:</strong> ${order.customerPhone || 'N/A'}</div>
+            <div><strong>Address:</strong> ${order.address || 'N/A'}</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <h4 style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px;">Itemized SKU Breakdown</h4>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            ${items.map(i => `
+              <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 10px 14px; border-radius: var(--radius-sm);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <img src="${i.img || (i.images && i.images[0]) || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=100'}" style="width: 44px; height: 44px; border-radius: var(--radius-xs); object-fit: cover;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.88rem;">${i.title}</div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted);">SKU Price: ₹${(i.price || 0).toLocaleString()} × Qty: ${i.qty || 1}</div>
+                  </div>
+                </div>
+                <div style="font-weight: 800; font-size: 0.95rem;">₹${((i.price || 0) * (i.qty || 1)).toLocaleString()}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Payment Method: <strong>${order.paymentMode || 'COD'}</strong></div>
+            <div style="font-size: 0.8rem; color: var(--status-success); font-weight: 700;">Status: ${order.status || 'Active'}</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Grand Total</div>
+            <div style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary);">₹${(order.total || 0).toLocaleString()}</div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('orderInspectModal').classList.add('active');
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      listenToOrders();
     });
   </script>
 </body>

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Hub & Live Order Tracking — ShopMarkets</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
   <style>
     .hub-grid { display: grid; grid-template-columns: 280px 1fr; gap: 32px; margin: 40px 0 80px; }
     .hub-sidebar { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px; height: fit-content; }
@@ -52,14 +52,19 @@
       <section>
         <!-- Orders View -->
         <div id="view-orders" class="hub-card">
-          <h2 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 20px;">Order History & Invoices</h2>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="font-size: 1.3rem; font-weight: 800;">Order History & Invoices</h2>
+            <span id="cloudSyncStatus" style="font-size: 0.78rem; color: var(--status-success); font-weight: 700;">
+              <i class="fas fa-cloud"></i> Firebase Synced
+            </span>
+          </div>
           <div id="ordersContainer"></div>
         </div>
 
         <!-- Live Tracking View -->
         <div id="view-tracking" class="hub-card" style="display: none;">
           <h2 style="font-size: 1.3rem; font-weight: 800; margin-bottom: 12px;">Live Air Express Timeline</h2>
-          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 24px;">Shipment ID: <strong>DEL-84920194IN</strong> (Delhivery Air)</p>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 24px;">Shipment ID: <strong id="trackingNumDisplay">DEL-84920194IN</strong> (Delhivery Air)</p>
           
           <div class="timeline-wrap">
             <div class="timeline-step completed"><div class="step-circle"><i class="fas fa-check"></i></div><span style="font-size: 0.75rem; font-weight: 700;">Ordered</span></div>
@@ -77,8 +82,8 @@
           <form onsubmit="event.preventDefault(); showToast('Return request submitted for inspection!');">
             <div style="margin-bottom: 14px;">
               <label style="display:block; font-size:0.85rem; font-weight:700; margin-bottom:6px;">Select Order</label>
-              <select style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.9rem;">
-                <option>Order #SM-984210 — Chronos Voyager Automatic (₹4,499)</option>
+              <select style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:var(--radius-sm); font-size:0.9rem;" id="returnOrderSelect">
+                <option>Select an active order</option>
               </select>
             </div>
             <div style="margin-bottom: 18px;">
@@ -123,20 +128,28 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script src="products.js"></script>
-  <script src="app.js?v=6"></script>
-  <script>
-    function switchTab(tab, btn) {
+  <script src="app.js?v=7"></script>
+  
+  <!-- Firebase Cloud Sync Script -->
+  <script type="module">
+    import { db, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "./firebase-config.js";
+
+    // Tab switcher
+    window.switchTab = function(tab, btn) {
       document.querySelectorAll('.hub-menu-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      if (btn) btn.classList.add('active');
       document.getElementById('view-orders').style.display = tab === 'orders' ? 'block' : 'none';
       document.getElementById('view-tracking').style.display = tab === 'tracking' ? 'block' : 'none';
       document.getElementById('view-returns').style.display = tab === 'returns' ? 'block' : 'none';
       document.getElementById('view-checkout').style.display = tab === 'checkout' ? 'block' : 'none';
-    }
+    };
 
-    function renderCustomerOrders() {
+    // Render Orders UI
+    window.renderCustomerOrders = function() {
       const container = document.getElementById('ordersContainer');
       const orders = JSON.parse(localStorage.getItem('sm_customer_orders')) || [];
+      if (!container) return;
+
       if (orders.length === 0) {
         container.innerHTML = `<p style="color: var(--text-muted);">No orders found. Explore our releases to make your first order.</p>`;
         return;
@@ -151,39 +164,43 @@
             </div>
             <span style="background: var(--accent-surface); color: var(--accent-primary); font-size: 0.75rem; font-weight: 800; padding: 4px 10px; border-radius: var(--radius-pill);">${o.status}</span>
           </div>
-          <div style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;">Total Paid: ₹${o.total.toLocaleString()} (${o.paymentMode})</div>
+          <div style="font-size: 0.95rem; font-weight: 800; margin-bottom: 10px;">Total Paid: ₹${(o.total || 0).toLocaleString()} (${o.paymentMode || 'COD'})</div>
           <div style="display: flex; gap: 10px;">
             <button onclick="switchTab('tracking', document.querySelectorAll('.hub-menu-btn')[1])" style="background: var(--bg-muted); padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 700;">Track Shipment</button>
             <button onclick="showToast('Downloading verified tax invoice PDF...')" style="background: var(--bg-muted); padding: 6px 12px; border-radius: var(--radius-sm); font-size: 0.8rem; font-weight: 700;"><i class="fas fa-file-invoice"></i> Download Invoice</button>
           </div>
         </div>
       `).join('');
+    };
+
+    // Real-Time Cloud Listener
+    function listenToCloudOrders() {
+      try {
+        const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+          const cloudOrders = [];
+          snapshot.forEach((doc) => {
+            cloudOrders.push({ firestoreId: doc.id, ...doc.data() });
+          });
+
+          if (cloudOrders.length > 0) {
+            localStorage.setItem('sm_customer_orders', JSON.stringify(cloudOrders));
+            renderCustomerOrders();
+          }
+        });
+      } catch (e) {
+        console.warn("Firestore offline fallback active:", e);
+      }
     }
 
-    function executeCheckout(e) {
+    // Cloud Order Placement
+    window.executeCheckout = async function(e) {
       e.preventDefault();
       const cart = getCart();
       if (cart.length === 0) {
-        showToast("Your Bag is empty! Please add products before checking out.", "fa-circle-xmark");
+        showToast("Your Bag is empty! Please add products first.", "fa-circle-xmark");
         return;
       }
-
-
-      // Customer profile load & auto-fill logic
-document.addEventListener('DOMContentLoaded', () => {
-  renderCustomerOrders();
-  
-  const savedProfile = JSON.parse(localStorage.getItem('sm_customer_profile'));
-  if (savedProfile) {
-    if (document.getElementById('chkName')) document.getElementById('chkName').value = savedProfile.name || '';
-    if (document.getElementById('chkPhone')) document.getElementById('chkPhone').value = savedProfile.phone || '';
-    if (document.getElementById('chkAddress')) document.getElementById('chkAddress').value = savedProfile.address || '';
-  }
-
-  if (window.location.hash === '#checkout') {
-    switchTab('checkout', document.querySelectorAll('.hub-menu-btn')[3]);
-  }
-});
 
       const subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
       const newOrder = {
@@ -193,28 +210,51 @@ document.addEventListener('DOMContentLoaded', () => {
         timelineStep: 1,
         trackingNumber: "DEL-" + Math.floor(10000000 + Math.random() * 90000000) + "IN",
         courier: "Delhivery Air Express",
+        customerName: document.getElementById('chkName').value.trim(),
+        customerPhone: document.getElementById('chkPhone').value.trim(),
+        address: document.getElementById('chkAddress').value.trim(),
         items: cart,
         subtotal: subtotal,
         discount: 0,
         shipping: 0,
         total: subtotal,
         paymentMode: "Cash on Delivery",
-        address: document.getElementById('chkAddress').value
+        createdAt: serverTimestamp()
       };
 
-      const orders = JSON.parse(localStorage.getItem('sm_customer_orders')) || [];
-      orders.unshift(newOrder);
-      localStorage.setItem('sm_customer_orders', JSON.stringify(orders));
-      localStorage.setItem('sm_cart_db', JSON.stringify([]));
-      updateBadges();
-
-      showToast(`Order #${newOrder.orderId} placed successfully!`);
-      switchTab('orders', document.querySelector('.hub-menu-btn'));
+      try {
+        showToast("Syncing with Firebase Firestore...", "fa-cloud-arrow-up");
+        await addDoc(collection(db, "orders"), newOrder);
+        
+        localStorage.setItem('sm_cart_db', JSON.stringify([]));
+        updateBadges();
+        showToast(`Order #${newOrder.orderId} synced to Firebase Cloud!`);
+        switchTab('orders', document.querySelector('.hub-menu-btn'));
+      } catch (err) {
+        console.error("Firestore push error, fallback to local:", err);
+        const orders = JSON.parse(localStorage.getItem('sm_customer_orders')) || [];
+        orders.unshift(newOrder);
+        localStorage.setItem('sm_customer_orders', JSON.stringify(orders));
+        localStorage.setItem('sm_cart_db', JSON.stringify([]));
+        updateBadges();
+        showToast(`Order #${newOrder.orderId} saved locally!`);
+        switchTab('orders', document.querySelector('.hub-menu-btn'));
+      }
       renderCustomerOrders();
-    }
+    };
 
+    // Auto-fill customer profile
     document.addEventListener('DOMContentLoaded', () => {
       renderCustomerOrders();
+      listenToCloudOrders();
+
+      const savedProfile = JSON.parse(localStorage.getItem('sm_customer_profile'));
+      if (savedProfile) {
+        if (document.getElementById('chkName')) document.getElementById('chkName').value = savedProfile.name || '';
+        if (document.getElementById('chkPhone')) document.getElementById('chkPhone').value = savedProfile.phone || '';
+        if (document.getElementById('chkAddress')) document.getElementById('chkAddress').value = savedProfile.address || '';
+      }
+
       if (window.location.hash === '#checkout') {
         switchTab('checkout', document.querySelectorAll('.hub-menu-btn')[3]);
       }
