@@ -3,31 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShopNest — Engineered Lifestyle & Essential Carry</title>
-  
-  <!-- Font Awesome Icons -->
+  <title>ShopMarkets — Engineered Lifestyle & Essential Carry</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=3">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
   <!-- Top Announcement -->
   <div class="announcement-bar">
-    Complimentary Express Shipping On All Orders Above ₹999 | Welcome to ShopNest
+    Complimentary Express Shipping On All Orders Above ₹999 | Welcome to ShopMarkets
   </div>
 
-  <!-- Primary Header -->
+  <!-- Main Header -->
   <header class="main-header">
     <div class="container header-container">
       <a href="index.html" class="brand-logo">
-        <span class="brand-icon">SN</span>
-        <span class="brand-name">ShopNest</span>
+        <span class="brand-icon">SM</span>
+        <span class="brand-name">ShopMarkets</span>
       </a>
 
       <nav class="nav-links">
         <a href="index.html" class="active">Collection</a>
         <a href="customer.html">Dashboard</a>
-        <a href="about.html">About ShopNest</a>
+        <a href="about.html">About ShopMarkets</a>
       </nav>
 
       <div class="header-search">
@@ -51,19 +49,19 @@
   <main class="container">
     <section class="hero-section">
       <div class="hero-card">
-        <span class="hero-pill">SHOPNEST EXCLUSIVE RELEASES</span>
+        <span class="hero-pill">SHOPMARKETS EXCLUSIVE RELEASES</span>
         <h1 class="hero-title">Precision Timepieces & Technical Carry.</h1>
         <p class="hero-subtitle">Meticulously engineered essentials crafted for modern lifestyle, daily commute, and timeless durability.</p>
         <a href="#productGrid" class="hero-cta">Explore Catalog <i class="fas fa-arrow-right"></i></a>
       </div>
     </section>
 
-    <!-- Category Filter Controls -->
+    <!-- Filters -->
     <div class="category-filter-bar" id="categoryFilterBar"></div>
 
-    <!-- Product Grid Section -->
+    <!-- Product Grid -->
     <div class="section-title-wrap">
-      <h2>ShopNest Releases</h2>
+      <h2>ShopMarkets Releases</h2>
     </div>
     <div class="product-grid" id="productGrid"></div>
   </main>
@@ -72,7 +70,7 @@
   <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleCartDrawer(false)"></div>
   <aside class="cart-drawer" id="cartDrawer">
     <div class="drawer-header">
-      <h3>ShopNest Bag</h3>
+      <h3>ShopMarkets Bag</h3>
       <button onclick="toggleCartDrawer(false)" style="background:none; border:none; cursor:pointer; font-size:1.1rem;">
         <i class="fas fa-times"></i>
       </button>
@@ -83,7 +81,7 @@
         <span>Subtotal</span>
         <span id="drawerTotal">₹0</span>
       </div>
-      <button class="btn-primary" onclick="window.location.href='customer.html#cart-view'">
+      <button class="btn-primary" onclick="window.location.href='customer.html#checkout'">
         Proceed to Checkout <i class="fas fa-arrow-right"></i>
       </button>
     </div>
@@ -94,7 +92,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-col">
-          <h4 style="font-size:1.1rem;">ShopNest</h4>
+          <h4 style="font-size:1.1rem;">ShopMarkets</h4>
           <p style="max-width:300px; line-height:1.6; margin-top:10px;">Dedicated to high-utility craftsmanship, modern materials, and direct transparent retail across India.</p>
         </div>
         <div class="footer-col">
@@ -116,12 +114,12 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <span>&copy; 2026 ShopNest. All Rights Reserved.</span>
+        <span>&copy; 2026 ShopMarkets. All Rights Reserved.</span>
         <span>Curated by Adnan Shah</span>
       </div>
     </div>
   </footer>
 
-  <script src="app.js?v=3"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

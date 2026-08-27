@@ -1,250 +1,182 @@
-/**
- * AURA Store Engine 2026
- * Pure Vanilla State Management & UI Reactive Controller
- */
-
-const AURA_CATALOG = [
-  {
-    id: "AUR-01",
-    name: "AURA Chronomaster Analog Watch (Pack of 2)",
-    brand: "AURA Precision",
-    category: "Timepieces",
-    price: 1299,
-    mrp: 2499,
-    rating: 4.8,
-    reviews: 142,
-    badge: "BESTSELLER",
-    image: "Images/Watches/Voguish Men Waches/1.jpg",
-    description: "Surgical-grade stainless steel quartz movement with sapphire-coated glass."
-  },
-  {
-    id: "AUR-02",
-    name: "Denver Elite Fragrance Set (3 x 50ml)",
-    brand: "Denver",
-    category: "Fragrance",
-    price: 649,
-    mrp: 1199,
-    rating: 4.7,
-    reviews: 89,
-    badge: "POPULAR",
-    image: "Images/Perfumes/denver/1.jpg",
-    description: "Formulated for long-lasting masculine freshness and notes."
-  },
-  {
-    id: "AUR-03",
-    name: "Urban Pro Technical Laptop Backpack",
-    brand: "AURA Technical",
-    category: "Carry",
-    price: 1899,
-    mrp: 3499,
-    rating: 4.9,
-    reviews: 210,
-    badge: "FEATURED",
-    image: "Images/Watches/BackPacks/IMG-20251025-WA0019.jpg",
-    description: "Waterproof technical ballistic nylon with cushioned 16-inch compartment."
-  },
-  {
-    id: "AUR-04",
-    name: "Digital OLED Minimalist Smart Timepiece",
-    brand: "AURA Tech",
-    category: "Timepieces",
-    price: 899,
-    mrp: 1799,
-    rating: 4.5,
-    reviews: 64,
-    badge: "NEW",
-    image: "Images/Watches/led watch/1.jpg",
-    description: "Featherlight skin-friendly silicone watch with crystal touch interface."
-  },
-  {
-    id: "AUR-05",
-    name: "Colorblocked Ergonomic Commuter Pack",
-    brand: "AURA Technical",
-    category: "Carry",
-    price: 1499,
-    mrp: 2999,
-    rating: 4.6,
-    reviews: 98,
-    badge: "SALE",
-    image: "Images/Backpacks/Travel-College-Bags/blue-1.jpg",
-    description: "High-capacity multi-compartment pack built for urban work and travel."
-  }
+// ShopMarkets Master Catalog
+const initialProducts = [
+  { id: 1, title: "Voyager Chrono 42", category: "Watches", price: 3499, originalPrice: 4999, img: "Images/Watches/1.jpg", tag: "Bestseller" },
+  { id: 2, title: "Aero Stealth Daypack 24L", category: "Backpacks", price: 2199, originalPrice: 2999, img: "Images/Backpacks/1.jpg", tag: "Waterproof" },
+  { id: 3, title: "Noir Oud Parfum 50ml", category: "Perfumes", price: 1899, originalPrice: 2499, img: "Images/Perfumes/1.jpg", tag: "Limited" },
+  { id: 4, title: "Minimalist Field Steel", category: "Watches", price: 2999, originalPrice: 3999, img: "Images/Watches/2.jpg", tag: "Sapphire" },
+  { id: 5, title: "Apex Tech Urban Hauler", category: "Backpacks", price: 2699, originalPrice: 3499, img: "Images/Backpacks/2.jpg", tag: "Ergonomic" },
+  { id: 6, title: "Cedar Smoke Extrait", category: "Perfumes", price: 2199, originalPrice: 2899, img: "Images/Perfumes/2.jpg", tag: "Artisan" }
 ];
 
-// Reactive Storage Helpers
-const getStorage = (key, fallback) => JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
-const setStorage = (key, val) => localStorage.setItem(key, JSON.stringify(val));
-
-// Global Runtime State
-let currentCategory = "All";
-let activeSearchQuery = "";
-let cartItems = getStorage("aura_cart", []);
-let wishlistIds = new Set(getStorage("aura_wishlist", []));
-
-// DOM Nodes
-const productGrid = document.getElementById("productGrid");
-const categoryFilterBar = document.getElementById("categoryFilterBar");
-const searchInput = document.getElementById("searchInput");
-const cartBadge = document.getElementById("cartBadge");
-const cartDrawer = document.getElementById("cartDrawer");
-const drawerBackdrop = document.getElementById("drawerBackdrop");
-const drawerBody = document.getElementById("drawerBody");
-const drawerTotal = document.getElementById("drawerTotal");
-
-// Initialize Navigation Badges
-function updateCounters() {
-  if (cartBadge) cartBadge.textContent = cartItems.length;
+// LocalStorage Setup
+if (!localStorage.getItem('sm_products')) {
+  localStorage.setItem('sm_products', JSON.stringify(initialProducts));
+}
+if (!localStorage.getItem('sm_cart')) {
+  localStorage.setItem('sm_cart', JSON.stringify([]));
+}
+if (!localStorage.getItem('sm_orders')) {
+  localStorage.setItem('sm_orders', JSON.stringify([]));
 }
 
-// Render Category Filter Pills
-function renderCategories() {
-  if (!categoryFilterBar) return;
-  const categories = ["All", ...new Set(AURA_CATALOG.map(p => p.category))];
-  
-  categoryFilterBar.innerHTML = categories.map(cat => `
-    <button class="cat-pill ${cat === currentCategory ? 'active' : ''}" onclick="filterCategory('${cat}')">
-      ${cat}
-    </button>
-  `).join("");
+// State Helpers
+function getProducts() { return JSON.parse(localStorage.getItem('sm_products')) || []; }
+function getCart() { return JSON.parse(localStorage.getItem('sm_cart')) || []; }
+function saveCart(cart) { 
+  localStorage.setItem('sm_cart', JSON.stringify(cart));
+  updateCartBadge();
+  renderDrawerCart();
 }
+function getOrders() { return JSON.parse(localStorage.getItem('sm_orders')) || []; }
+function saveOrders(orders) { localStorage.setItem('sm_orders', JSON.stringify(orders)); }
 
-// Render Products Grid
-function renderCatalog() {
-  if (!productGrid) return;
+// Render Storefront Grid
+function renderStorefront(filter = "All", query = "") {
+  const grid = document.getElementById('productGrid');
+  if (!grid) return;
 
-  let items = AURA_CATALOG;
+  const products = getProducts();
+  const filtered = products.filter(p => {
+    const matchCat = filter === "All" || p.category.toLowerCase() === filter.toLowerCase();
+    const matchQuery = p.title.toLowerCase().includes(query.toLowerCase()) || p.category.toLowerCase().includes(query.toLowerCase());
+    return matchCat && matchQuery;
+  });
 
-  if (currentCategory !== "All") {
-    items = items.filter(p => p.category === currentCategory);
-  }
-
-  if (activeSearchQuery) {
-    const q = activeSearchQuery.toLowerCase();
-    items = items.filter(p => p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
-  }
-
-  if (items.length === 0) {
-    productGrid.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--aura-subtext);">
-        <p style="font-size: 1.1rem; font-weight: 600;">No products match your criteria.</p>
-      </div>`;
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--aura-subtext);">No products found matching your search.</div>`;
     return;
   }
 
-  productGrid.innerHTML = items.map(product => {
-    const isLiked = wishlistIds.has(product.id);
-    const discount = Math.round(((product.mrp - product.price) / product.mrp) * 100);
-
-    return `
-      <div class="product-card" onclick="openProductDetail('${product.id}')">
-        <div class="card-img-wrap">
-          ${product.badge ? `<span class="card-badge">${product.badge}</span>` : ''}
-          <button class="wishlist-toggle ${isLiked ? 'liked' : ''}" onclick="toggleWishlist(event, '${product.id}')" aria-label="Wishlist">
-            <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
-          </button>
-          <img src="${product.image}" alt="${product.name}" loading="lazy">
-        </div>
-        <div class="card-details">
-          <span class="card-brand">${product.brand}</span>
-          <h3 class="card-title">${product.name}</h3>
-          <div class="card-price-row">
-            <span class="price-current">₹${product.price.toLocaleString('en-IN')}</span>
-            <span class="price-mrp">₹${product.mrp.toLocaleString('en-IN')}</span>
-            <span class="price-discount">${discount}% OFF</span>
-          </div>
-        </div>
+  grid.innerHTML = filtered.map(item => `
+    <div class="product-card">
+      <div class="card-img-wrap">
+        <img src="${item.img}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80'">
+        ${item.tag ? `<span class="tag-badge">${item.tag}</span>` : ''}
       </div>
-    `;
-  }).join("");
+      <div class="card-body">
+        <div class="card-category">${item.category}</div>
+        <div class="card-title">${item.title}</div>
+        <div class="card-price-row">
+          <span class="price-current">₹${item.price.toLocaleString()}</span>
+          ${item.originalPrice ? `<span class="price-original">₹${item.originalPrice.toLocaleString()}</span>` : ''}
+        </div>
+        <button class="btn-add-cart" onclick="addToCart(${item.id})">Add to Bag</button>
+      </div>
+    </div>
+  `).join('');
 }
 
-// Cart Drawer Interaction
+// Render Categories
+function renderCategories() {
+  const filterBar = document.getElementById('categoryFilterBar');
+  if (!filterBar) return;
+  const categories = ["All", "Watches", "Backpacks", "Perfumes"];
+  filterBar.innerHTML = categories.map((cat, idx) => `
+    <button class="filter-btn ${idx === 0 ? 'active' : ''}" onclick="applyCategoryFilter('${cat}', this)">${cat}</button>
+  `).join('');
+}
+
+function applyCategoryFilter(cat, elem) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  elem.classList.add('active');
+  renderStorefront(cat);
+}
+
+// Cart Drawer Handlers
 function toggleCartDrawer(open) {
-  if (!cartDrawer || !drawerBackdrop) return;
-  cartDrawer.classList.toggle("active", open);
-  drawerBackdrop.classList.toggle("active", open);
-  if (open) renderCartDrawer();
+  const backdrop = document.getElementById('drawerBackdrop');
+  const drawer = document.getElementById('cartDrawer');
+  if (!drawer) return;
+  if (open) {
+    backdrop.classList.add('active');
+    drawer.classList.add('active');
+    renderDrawerCart();
+  } else {
+    backdrop.classList.remove('active');
+    drawer.classList.remove('active');
+  }
 }
 
 function addToCart(productId) {
-  const product = AURA_CATALOG.find(p => p.id === productId);
+  const products = getProducts();
+  const product = products.find(p => p.id === productId);
   if (!product) return;
 
-  cartItems.push(product);
-  setStorage("aura_cart", cartItems);
-  updateCounters();
+  const cart = getCart();
+  const existing = cart.find(c => c.id === productId);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ ...product, qty: 1 });
+  }
+  saveCart(cart);
   toggleCartDrawer(true);
 }
 
-function removeFromCart(index) {
-  cartItems.splice(index, 1);
-  setStorage("aura_cart", cartItems);
-  updateCounters();
-  renderCartDrawer();
+function updateCartQty(productId, delta) {
+  let cart = getCart();
+  const item = cart.find(c => c.id === productId);
+  if (!item) return;
+
+  item.qty += delta;
+  if (item.qty <= 0) {
+    cart = cart.filter(c => c.id !== productId);
+  }
+  saveCart(cart);
 }
 
-function renderCartDrawer() {
-  if (!drawerBody || !drawerTotal) return;
+function renderDrawerCart() {
+  const body = document.getElementById('drawerBody');
+  const totalElem = document.getElementById('drawerTotal');
+  if (!body) return;
 
-  if (cartItems.length === 0) {
-    drawerBody.innerHTML = `<div style="text-align:center; padding: 40px 0; color: var(--aura-subtext);">Your shopping bag is empty.</div>`;
-    drawerTotal.textContent = "₹0";
+  const cart = getCart();
+  if (cart.length === 0) {
+    body.innerHTML = `<div style="text-align: center; color: var(--aura-subtext); margin-top: 40px;"><i class="fas fa-bag-shopping" style="font-size: 2rem; margin-bottom: 10px;"></i><p>Your ShopMarkets Bag is empty.</p></div>`;
+    if (totalElem) totalElem.innerText = "₹0";
     return;
   }
 
   let total = 0;
-  drawerBody.innerHTML = cartItems.map((item, idx) => {
-    total += item.price;
+  body.innerHTML = cart.map(item => {
+    total += item.price * item.qty;
     return `
-      <div class="cart-item-card">
-        <img src="${item.image}" alt="${item.name}" class="cart-item-img">
-        <div class="cart-item-info">
-          <h4 class="cart-item-title">${item.name}</h4>
-          <span class="cart-item-price">₹${item.price.toLocaleString('en-IN')}</span>
+      <div class="cart-row">
+        <img src="${item.img}" alt="${item.title}" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&q=80'">
+        <div class="cart-row-details">
+          <div class="cart-row-title">${item.title}</div>
+          <div class="cart-row-price">₹${item.price.toLocaleString()} x ${item.qty}</div>
         </div>
-        <button onclick="removeFromCart(${idx})" style="background:none; border:none; color: var(--aura-subtext); cursor:pointer;">
-          <i class="fas fa-trash-can"></i>
-        </button>
+        <div class="cart-row-ctrls">
+          <button onclick="updateCartQty(${item.id}, -1)">-</button>
+          <span>${item.qty}</span>
+          <button onclick="updateCartQty(${item.id}, 1)">+</button>
+        </div>
       </div>
     `;
-  }).join("");
+  }).join('');
 
-  drawerTotal.textContent = `₹${total.toLocaleString('en-IN')}`;
+  if (totalElem) totalElem.innerText = `₹${total.toLocaleString()}`;
 }
 
-// Filter Event Handlers
-function filterCategory(cat) {
-  currentCategory = cat;
+function updateCartBadge() {
+  const badge = document.getElementById('cartBadge');
+  if (!badge) return;
+  const cart = getCart();
+  const totalItems = cart.reduce((acc, c) => acc + c.qty, 0);
+  badge.innerText = totalItems;
+}
+
+// Initial Boot
+document.addEventListener('DOMContentLoaded', () => {
   renderCategories();
-  renderCatalog();
-}
+  renderStorefront();
+  updateCartBadge();
 
-function toggleWishlist(e, id) {
-  e.stopPropagation();
-  if (wishlistIds.has(id)) {
-    wishlistIds.delete(id);
-  } else {
-    wishlistIds.add(id);
-  }
-  setStorage("aura_wishlist", Array.from(wishlistIds));
-  renderCatalog();
-}
-
-function openProductDetail(id) {
-  // Navigation for standalone flow
-  window.location.href = `customer.html#product-${id}`;
-}
-
-// Global Event Listeners
-document.addEventListener("DOMContentLoaded", () => {
-  renderCategories();
-  renderCatalog();
-  updateCounters();
-
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      activeSearchQuery = e.target.value.trim();
-      renderCatalog();
+  const search = document.getElementById('searchInput');
+  if (search) {
+    search.addEventListener('input', (e) => {
+      renderStorefront("All", e.target.value);
     });
   }
 });
