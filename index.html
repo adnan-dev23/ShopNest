@@ -3,123 +3,292 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ShopMarkets — Engineered Lifestyle & Essential Carry</title>
+  <title>ShopMarkets — Curated D2C Marketplace & Technical Carry</title>
+  <meta name="description" content="ShopMarkets is an engineered D2C marketplace for precision timepieces, weatherproof urban carry, and artisan fragrances across India.">
+  
+  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 
-  <!-- Top Announcement -->
-  <div class="announcement-bar">
-    Complimentary Express Shipping On All Orders Above ₹999 | Welcome to ShopMarkets
+  <!-- Top Announcement Notification -->
+  <div class="top-notice-bar">
+    <div class="notice-inner">
+      <span class="pill">Festive Live</span>
+      <span>Complimentary All-India Express Dispatch On Orders Above ₹999</span>
+    </div>
+    <div style="font-size: 0.75rem; font-weight: 700; cursor: pointer;" onclick="toggleThemeMode()">
+      <i class="fas fa-moon"></i> Toggle Theme
+    </div>
   </div>
 
-  <!-- Main Header -->
+  <!-- Main Sticky Marketplace Navigation -->
   <header class="main-header">
-    <div class="container header-container">
-      <a href="index.html" class="brand-logo">
-        <span class="brand-icon">SM</span>
-        <span class="brand-name">ShopMarkets</span>
+    <div class="container header-inner">
+      <a href="index.html" class="brand-wrap">
+        <div class="brand-badge">SM</div>
+        <div class="brand-text-block">
+          <span class="brand-title">ShopMarkets</span>
+          <span class="brand-tag">Marketplace</span>
+        </div>
       </a>
 
-      <nav class="nav-links">
-        <a href="index.html" class="active">Collection</a>
-        <a href="customer.html">Dashboard</a>
-        <a href="about.html">About ShopMarkets</a>
-      </nav>
+      <!-- Large Smart Search Bar -->
+      <div class="smart-search-box">
+        <div class="search-input-wrap">
+          <i class="fas fa-magnifying-glass search-icon"></i>
+          <input type="text" id="globalSearchInput" placeholder="Search by brand, category, or specifications (e.g. Sapphire, Cordura)...">
+        </div>
 
-      <div class="header-search">
-        <i class="fas fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="Search timepieces, carry, fragrance...">
+        <!-- Search Suggestions Overlay Flyout -->
+        <div class="search-flyout" id="searchSuggestionsFlyout">
+          <div class="search-section-label">Recent Searches</div>
+          <div class="history-tags-grid">
+            <span class="history-tag" onclick="document.getElementById('globalSearchInput').value='Watches'; renderMarketplaceCatalog();">Automatic Watches</span>
+            <span class="history-tag" onclick="document.getElementById('globalSearchInput').value='Backpack'; renderMarketplaceCatalog();">Cordura Backpacks</span>
+            <span class="history-tag" onclick="document.getElementById('globalSearchInput').value='Parfum'; renderMarketplaceCatalog();">Artisan Parfum</span>
+          </div>
+          <div class="search-section-label">Suggested Products</div>
+          <div id="dynamicSuggestionsList"></div>
+        </div>
       </div>
 
+      <!-- Action Icons -->
       <div class="header-actions">
-        <a href="login.html" class="icon-btn" title="Account Access">
+        <a href="customer.html" class="nav-icon-btn" title="Client Hub">
           <i class="far fa-user"></i>
         </a>
-        <button class="icon-btn" onclick="toggleCartDrawer(true)" title="Shopping Bag">
+        <button class="nav-icon-btn" onclick="toggleDrawer('wishlistDrawer', true)" title="Wishlist">
+          <i class="far fa-heart"></i>
+          <span class="counter-badge wishlist-badge-num">0</span>
+        </button>
+        <button class="nav-icon-btn" onclick="toggleDrawer('cartDrawer', true)" title="Shopping Bag">
           <i class="fas fa-bag-shopping"></i>
-          <span class="badge-counter" id="cartBadge">0</span>
+          <span class="counter-badge cart-badge-num">0</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Hero Feature -->
+  <!-- Mega Menu Category Bar -->
+  <nav class="category-nav-bar">
+    <div class="container">
+      <ul class="mega-nav-list">
+        <li class="mega-nav-item">
+          <a href="#catalog" class="mega-nav-link" onclick="CURRENT_FILTER.category='all'; renderMarketplaceCatalog();">
+            <i class="fas fa-border-all"></i> All Collections
+          </a>
+        </li>
+        <li class="mega-nav-item">
+          <a href="#catalog" class="mega-nav-link" onclick="CURRENT_FILTER.category='electronics'; renderMarketplaceCatalog();">
+            <i class="fas fa-clock"></i> Timepieces & Audio <i class="fas fa-chevron-down" style="font-size:0.6rem;"></i>
+          </a>
+          <div class="mega-dropdown-menu">
+            <div class="dropdown-col">
+              <h5>Timepieces</h5>
+              <a href="#catalog">Automatic Watches</a>
+              <a href="#catalog">Chronographs</a>
+              <a href="#catalog">Sapphire Field Watches</a>
+            </div>
+            <div class="dropdown-col">
+              <h5>Smart Audio</h5>
+              <a href="#catalog">Studio ANC Headphones</a>
+              <a href="#catalog">Hi-Res IEMs</a>
+            </div>
+          </div>
+        </li>
+        <li class="mega-nav-item">
+          <a href="#catalog" class="mega-nav-link" onclick="CURRENT_FILTER.category='fashion'; renderMarketplaceCatalog();">
+            <i class="fas fa-bag-shopping"></i> Technical Carry
+          </a>
+        </li>
+        <li class="mega-nav-item">
+          <a href="#catalog" class="mega-nav-link" onclick="CURRENT_FILTER.category='fragrance'; renderMarketplaceCatalog();">
+            <i class="fas fa-spray-can-sparkles"></i> Parfum Blends
+          </a>
+        </li>
+        <li class="mega-nav-item">
+          <a href="admin.html" class="mega-nav-link" style="color: var(--accent-primary);">
+            <i class="fas fa-sliders"></i> Operations Console
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Promotional Grid -->
   <main class="container">
-    <section class="hero-section">
-      <div class="hero-card">
-        <span class="hero-pill">SHOPMARKETS EXCLUSIVE RELEASES</span>
-        <h1 class="hero-title">Precision Timepieces & Technical Carry.</h1>
-        <p class="hero-subtitle">Meticulously engineered essentials crafted for modern lifestyle, daily commute, and timeless durability.</p>
-        <a href="#productGrid" class="hero-cta">Explore Catalog <i class="fas fa-arrow-right"></i></a>
+    <section class="hero-marketplace">
+      <div class="hero-grid-layout">
+        <!-- Main Banner -->
+        <div class="hero-main-banner">
+          <span class="hero-badge-pill">ShopMarkets Exclusive Batch</span>
+          <h1 class="hero-heading">Engineered Carry & High-Utility Essentials.</h1>
+          <p class="hero-desc">Direct-to-consumer online marketplace connecting discerning buyers with small-batch watchmakers, technical luggage crafters, and perfumers.</p>
+          <div class="hero-btn-group">
+            <a href="#catalog" class="btn-hero-primary">Explore Releases <i class="fas fa-arrow-right"></i></a>
+            <a href="customer.html#orders" class="btn-hero-primary" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);">Track Shipment</a>
+          </div>
+        </div>
+
+        <!-- Flash Deal Counter Card -->
+        <div class="hero-side-card">
+          <div>
+            <span style="font-size:0.75rem; font-weight:800; color:var(--status-danger); text-transform:uppercase;">Flash Sale Expiring</span>
+            <h3 style="font-size:1.25rem; font-weight:800; margin:6px 0 10px;">Voyager Automatic 42mm</h3>
+            <p style="font-size:0.85rem; color:var(--text-secondary);">Save ₹2,500 on certified NH35A automatic sapphire editions.</p>
+            <div class="flash-deal-clock">
+              <div class="clock-unit"><div class="num" id="clockHrs">47</div><div class="lbl">Hrs</div></div>
+              <div class="clock-unit"><div class="num" id="clockMins">59</div><div class="lbl">Min</div></div>
+              <div class="clock-unit"><div class="num" id="clockSecs">30</div><div class="lbl">Sec</div></div>
+            </div>
+          </div>
+          <button class="btn-card-add" style="margin-top:20px; background:var(--accent-secondary); color:#fff;" onclick="openQuickView('sm-01')">View Flash Offer</button>
+        </div>
       </div>
     </section>
 
-    <!-- Filters -->
-    <div class="category-filter-bar" id="categoryFilterBar"></div>
+    <!-- Value Propositions -->
+    <section class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon"><i class="fas fa-truck-fast"></i></div>
+        <div class="benefit-text"><h4>Air Express Shipping</h4><p>Free delivery on orders over ₹999</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon"><i class="fas fa-shield-halved"></i></div>
+        <div class="benefit-text"><h4>2-Year Official Warranty</h4><p>Direct manufacturer coverage</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon"><i class="fas fa-rotate-left"></i></div>
+        <div class="benefit-text"><h4>7-Day No-Hassle Return</h4><p>Doorstep inspection & refunds</p></div>
+      </div>
+      <div class="benefit-card">
+        <div class="benefit-icon"><i class="fas fa-lock"></i></div>
+        <div class="benefit-text"><h4>Secure Encrypted Checkout</h4><p>Cash on Delivery & UPI enabled</p></div>
+      </div>
+    </section>
 
-    <!-- Product Grid -->
-    <div class="section-title-wrap">
-      <h2>ShopMarkets Releases</h2>
+    <!-- Marketplace Main Layout (Filters + Dynamic Grid) -->
+    <div class="marketplace-layout" id="catalog">
+      <!-- Filter Sidebar -->
+      <aside class="filter-sidebar">
+        <div class="filter-header">
+          <h3 style="font-size: 1rem; font-weight: 800;">Filters</h3>
+          <button onclick="CURRENT_FILTER={category:'all',brands:[],maxPrice:10000,sortBy:'featured'}; renderMarketplaceCatalog();" style="font-size: 0.8rem; color: var(--accent-primary); font-weight: 700;">Clear All</button>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-title">Category</div>
+          <label class="filter-checkbox-label"><input type="radio" name="catFilter" checked onclick="CURRENT_FILTER.category='all'; renderMarketplaceCatalog();"> All Collections</label>
+          <label class="filter-checkbox-label"><input type="radio" name="catFilter" onclick="CURRENT_FILTER.category='electronics'; renderMarketplaceCatalog();"> Timepieces & Audio</label>
+          <label class="filter-checkbox-label"><input type="radio" name="catFilter" onclick="CURRENT_FILTER.category='fashion'; renderMarketplaceCatalog();"> Technical Carry</label>
+          <label class="filter-checkbox-label"><input type="radio" name="catFilter" onclick="CURRENT_FILTER.category='fragrance'; renderMarketplaceCatalog();"> Fragrance</label>
+          <label class="filter-checkbox-label"><input type="radio" name="catFilter" onclick="CURRENT_FILTER.category='home'; renderMarketplaceCatalog();"> Workspace</label>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-title">Max Price</div>
+          <input type="range" min="1000" max="10000" step="500" value="10000" style="width:100%; accent-color:var(--accent-primary);" oninput="CURRENT_FILTER.maxPrice=Number(this.value); document.getElementById('priceRangeVal').innerText='₹'+Number(this.value).toLocaleString(); renderMarketplaceCatalog();">
+          <div style="font-size: 0.85rem; font-weight: 700; margin-top: 6px;" id="priceRangeVal">Up to ₹10,000</div>
+        </div>
+
+        <div class="filter-group">
+          <div class="filter-title">Verified Brands</div>
+          <label class="filter-checkbox-label"><input type="checkbox" onchange="toggleBrandFilter('Chronos', this.checked)"> Chronos</label>
+          <label class="filter-checkbox-label"><input type="checkbox" onchange="toggleBrandFilter('NomadCarry', this.checked)"> NomadCarry</label>
+          <label class="filter-checkbox-label"><input type="checkbox" onchange="toggleBrandFilter('L\'Artisan', this.checked)"> L'Artisan</label>
+          <label class="filter-checkbox-label"><input type="checkbox" onchange="toggleBrandFilter('AuraTech', this.checked)"> AuraTech</label>
+        </div>
+      </aside>
+
+      <!-- Products Grid Section -->
+      <section>
+        <div class="catalog-header-bar">
+          <div>
+            <h2 style="font-size: 1.4rem; font-weight: 800;">Catalog Releases</h2>
+            <div id="productCountDisplay" style="font-size: 0.85rem; color: var(--text-muted);">Loading catalog items...</div>
+          </div>
+          <select style="background: var(--bg-surface); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.85rem;" onchange="CURRENT_FILTER.sortBy=this.value; renderMarketplaceCatalog();">
+            <option value="featured">Sort by: Featured</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Highest Customer Rating</option>
+          </select>
+        </div>
+
+        <div class="product-grid" id="productCatalogGrid"></div>
+      </section>
     </div>
-    <div class="product-grid" id="productGrid"></div>
   </main>
 
   <!-- Slide-Over Shopping Drawer -->
-  <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleCartDrawer(false)"></div>
-  <aside class="cart-drawer" id="cartDrawer">
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer('cartDrawer', false); toggleDrawer('wishlistDrawer', false);"></div>
+  <aside class="drawer-panel" id="cartDrawer">
     <div class="drawer-header">
-      <h3>ShopMarkets Bag</h3>
-      <button onclick="toggleCartDrawer(false)" style="background:none; border:none; cursor:pointer; font-size:1.1rem;">
-        <i class="fas fa-times"></i>
-      </button>
+      <h3 style="font-size: 1.1rem; font-weight: 800;">Your Shopping Bag</h3>
+      <button onclick="toggleDrawer('cartDrawer', false)"><i class="fas fa-xmark"></i></button>
     </div>
-    <div class="drawer-body" id="drawerBody"></div>
+    <div class="drawer-body" id="cartDrawerItems"></div>
     <div class="drawer-footer">
-      <div class="drawer-total-row">
-        <span>Subtotal</span>
-        <span id="drawerTotal">₹0</span>
+      <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+        <input type="text" id="couponCodeInput" placeholder="Promo code (e.g. MARKET10)" style="flex:1; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.85rem; text-transform: uppercase;">
+        <button onclick="applyCouponCode()" style="background: var(--accent-secondary); color: #fff; padding: 0 16px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.85rem;">Apply</button>
       </div>
-      <button class="btn-primary" onclick="window.location.href='customer.html#checkout'">
-        Proceed to Checkout <i class="fas fa-arrow-right"></i>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 6px;">
+        <span>Subtotal</span>
+        <span id="drawerSubtotal">₹0</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: var(--status-success); margin-bottom: 12px;">
+        <span>Promo Discount</span>
+        <span id="drawerDiscount">-₹0</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; margin-bottom: 18px;">
+        <span>Grand Total</span>
+        <span id="drawerGrandTotal">₹0</span>
+      </div>
+      <button class="btn-hero-primary" style="width: 100%; justify-content: center;" onclick="window.location.href='customer.html#checkout'">
+        Secure Checkout <i class="fas fa-lock"></i>
       </button>
     </div>
   </aside>
 
-  <!-- Modern Dark Footer -->
-  <footer class="main-footer">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-col">
-          <h4 style="font-size:1.1rem;">ShopMarkets</h4>
-          <p style="max-width:300px; line-height:1.6; margin-top:10px;">Dedicated to high-utility craftsmanship, modern materials, and direct transparent retail across India.</p>
-        </div>
-        <div class="footer-col">
-          <h4>Explore</h4>
-          <a href="index.html">Timepieces</a>
-          <a href="index.html">Technical Carry</a>
-          <a href="index.html">Fragrance Series</a>
-        </div>
-        <div class="footer-col">
-          <h4>Client Care</h4>
-          <a href="customer.html">Live Order Tracking</a>
-          <a href="about.html">Shipping Guidelines</a>
-          <a href="about.html">Returns & Policies</a>
-        </div>
-        <div class="footer-col">
-          <h4>Management</h4>
-          <a href="login.html">Staff Console</a>
-          <a href="customer.html">Customer Profile</a>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2026 ShopMarkets. All Rights Reserved.</span>
-        <span>Curated by Adnan Shah</span>
-      </div>
-    </div>
-  </footer>
+  <!-- Comparison Floating Dock -->
+  <div class="compare-dock" id="compareDock">
+    <span style="font-size: 0.85rem; font-weight: 700;" id="compareCountText">0 items selected</span>
+    <button style="background: var(--accent-primary); color: #fff; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 0.8rem; font-weight: 700;" onclick="showToast('Loading product comparison view...')">Compare Now</button>
+  </div>
 
-  <script src="app.js?v=5"></script>
+  <!-- Quick View Modal -->
+  <div class="modal-overlay" id="quickViewModal">
+    <div class="modal-content-card">
+      <button class="modal-close-btn" onclick="closeModal('quickViewModal')"><i class="fas fa-xmark"></i></button>
+      <div id="quickViewModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Mobile Bottom Sticky Navigation -->
+  <nav class="mobile-bottom-nav">
+    <a href="index.html" class="mobile-nav-item active"><i class="fas fa-house"></i><span>Store</span></a>
+    <a href="#catalog" class="mobile-nav-item"><i class="fas fa-magnifying-glass"></i><span>Explore</span></a>
+    <a href="javascript:void(0)" class="mobile-nav-item" onclick="toggleDrawer('cartDrawer', true)"><i class="fas fa-bag-shopping"></i><span>Bag</span></a>
+    <a href="customer.html" class="mobile-nav-item"><i class="far fa-user"></i><span>Account</span></a>
+  </nav>
+
+  <script src="products.js"></script>
+  <script src="app.js?v=6"></script>
+  <script>
+    function toggleBrandFilter(brand, checked) {
+      if (checked) {
+        CURRENT_FILTER.brands.push(brand);
+      } else {
+        CURRENT_FILTER.brands = CURRENT_FILTER.brands.filter(b => b !== brand);
+      }
+      renderMarketplaceCatalog();
+    }
+  </script>
 </body>
 </html>
