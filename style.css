@@ -1137,3 +1137,22 @@ input, select, textarea {
     grid-template-columns: 1fr;
   }
 }
+
+.user-greeting-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border-color);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+}
+
+.user-greeting-btn:hover {
+  background: var(--border-color);
+  transform: translateY(-1px);
+}

@@ -3,44 +3,263 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Account Portal — ShopMarkets</title>
+  <title>Customer Access & Portal — ShopMarkets</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
   <style>
-    .auth-wrap { max-width: 420px; margin: 80px auto; background: var(--aura-surface); border: 1px solid var(--aura-border); border-radius: var(--radius-md); padding: 40px; box-shadow: var(--shadow-md); text-align: center; }
-    .form-group { text-align: left; margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
-    .form-group input { width: 100%; padding: 12px 14px; border: 1px solid var(--aura-border); border-radius: var(--radius-sm); font-size: 0.9rem; outline: none; }
+    .auth-page-wrap {
+      min-height: calc(100vh - var(--header-height));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .auth-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 40px;
+      max-width: 460px;
+      width: 100%;
+      box-shadow: var(--shadow-lg);
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      text-align: center;
+      padding: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      transition: var(--transition-fast);
+    }
+    .auth-tab-btn.active {
+      color: var(--accent-primary);
+      background: var(--accent-surface);
+    }
+    .auth-form-group {
+      margin-bottom: 16px;
+    }
+    .auth-form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-secondary);
+    }
+    .auth-input-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .auth-input-box i {
+      position: absolute;
+      left: 14px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .auth-input-box input, .auth-input-box textarea {
+      width: 100%;
+      background: var(--bg-muted);
+      border: 1px solid var(--border-color);
+      padding: 12px 14px 12px 42px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: var(--transition-fast);
+    }
+    .auth-input-box textarea {
+      padding-left: 14px;
+    }
+    .auth-input-box input:focus, .auth-input-box textarea:focus {
+      border-color: var(--accent-primary);
+      background: var(--bg-surface);
+    }
+    .switch-auth-text {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 20px;
+    }
+    .switch-auth-text a {
+      color: var(--accent-primary);
+      font-weight: 700;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
 
-  <div class="auth-wrap">
-    <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:24px;">
-      <span class="brand-icon">SM</span>
-      <span class="brand-name">ShopMarkets</span>
+  <header class="main-header">
+    <div class="container header-inner">
+      <a href="index.html" class="brand-wrap">
+        <div class="brand-badge">SM</div>
+        <div class="brand-text-block">
+          <span class="brand-title">ShopMarkets</span>
+          <span class="brand-tag">Account Gateway</span>
+        </div>
+      </a>
+      <a href="index.html" class="btn-hero-primary" style="padding: 8px 18px; font-size: 0.85rem;"><i class="fas fa-store"></i> Store</a>
     </div>
-    <h2 style="font-size:1.3rem; margin-bottom:8px;">Console Sign In</h2>
-    <p style="color:var(--aura-subtext); font-size:0.85rem; margin-bottom:24px;">Enter staff credentials to manage ShopMarkets store.</p>
+  </header>
 
-    <form onsubmit="handleAuth(event)">
-      <div class="form-group">
-        <label>Admin ID / Email</label>
-        <input type="text" id="adminUser" required placeholder="admin@shopmarkets.com">
+  <main class="auth-page-wrap">
+    <div class="auth-card">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="brand-badge" style="margin: 0 auto 12px; width: 44px; height: 44px; font-size: 1.1rem;">SM</div>
+        <h1 style="font-size: 1.4rem; font-weight: 800;" id="authHeading">Customer Sign In</h1>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Save your shipping profile and access one-click checkout.</p>
       </div>
-      <div class="form-group">
-        <label>Security Key</label>
-        <input type="password" id="adminPass" required placeholder="••••••••">
-      </div>
-      <button type="submit" class="btn-primary" style="margin-top:10px;">Authenticate Access</button>
-    </form>
-  </div>
 
+      <!-- Mode Selector Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tabCustomer" onclick="setAuthMode('customer')">Customer Account</button>
+        <button class="auth-tab-btn" id="tabAdmin" onclick="setAuthMode('admin')">Staff Console</button>
+      </div>
+
+      <!-- Customer Form -->
+      <form id="customerAuthForm" onsubmit="handleCustomerAuth(event)">
+        <div class="auth-form-group">
+          <label>Full Name</label>
+          <div class="auth-input-box">
+            <i class="far fa-user"></i>
+            <input type="text" id="custNameInput" required placeholder="Adnan Shah">
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label>Mobile Number (For Delivery & OTP)</label>
+          <div class="auth-input-box">
+            <i class="fas fa-phone"></i>
+            <input type="tel" id="custPhoneInput" required placeholder="+91 98765 43210" pattern="[0-9+ ]{10,14}">
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label>Email Address</label>
+          <div class="auth-input-box">
+            <i class="far fa-envelope"></i>
+            <input type="email" id="custEmailInput" required placeholder="adnan@example.com">
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label>Default Delivery Address</label>
+          <div class="auth-input-box">
+            <textarea id="custAddressInput" rows="2" required placeholder="House/Flat No, Street, City, Pincode"></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-hero-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+          Save & Proceed to Dashboard <i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <!-- Admin Form (Initially Hidden) -->
+      <form id="adminAuthForm" onsubmit="handleAdminAuth(event)" style="display: none;">
+        <div class="auth-form-group">
+          <label>Staff Identification / Email</label>
+          <div class="auth-input-box">
+            <i class="fas fa-shield-halved"></i>
+            <input type="text" id="adminUserInput" required placeholder="admin@shopmarkets.com">
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label>Security Key</label>
+          <div class="auth-input-box">
+            <i class="fas fa-key"></i>
+            <input type="password" id="adminPassInput" required placeholder="••••••••">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-hero-primary" style="width: 100%; justify-content: center; margin-top: 10px; background: var(--accent-secondary);">
+          Authenticate Access <i class="fas fa-lock"></i>
+        </button>
+      </form>
+
+      <div class="switch-auth-text">
+        <span>Data is safely preserved on your device storage.</span>
+      </div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="products.js"></script>
+  <script src="app.js?v=6"></script>
   <script>
-    function handleAuth(e) {
-      e.preventDefault();
-      window.location.href = 'admin.html';
+    let currentMode = 'customer';
+
+    function setAuthMode(mode) {
+      currentMode = mode;
+      const custTab = document.getElementById('tabCustomer');
+      const adminTab = document.getElementById('tabAdmin');
+      const custForm = document.getElementById('customerAuthForm');
+      const adminForm = document.getElementById('adminAuthForm');
+      const heading = document.getElementById('authHeading');
+
+      if (mode === 'customer') {
+        custTab.classList.add('active');
+        adminTab.classList.remove('active');
+        custForm.style.display = 'block';
+        adminForm.style.display = 'none';
+        heading.innerText = 'Customer Sign In';
+      } else {
+        adminTab.classList.add('active');
+        custTab.classList.remove('active');
+        custForm.style.display = 'none';
+        adminForm.style.display = 'block';
+        heading.innerText = 'Staff Console Login';
+      }
     }
+
+    // Save customer details in device localStorage
+    function handleCustomerAuth(e) {
+      e.preventDefault();
+      const profile = {
+        name: document.getElementById('custNameInput').value.trim(),
+        phone: document.getElementById('custPhoneInput').value.trim(),
+        email: document.getElementById('custEmailInput').value.trim(),
+        address: document.getElementById('custAddressInput').value.trim(),
+        loggedInAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('sm_customer_profile', JSON.stringify(profile));
+      showToast('Profile saved successfully on this device!');
+      
+      setTimeout(() => {
+        window.location.href = 'customer.html';
+      }, 800);
+    }
+
+    function handleAdminAuth(e) {
+      e.preventDefault();
+      const user = document.getElementById('adminUserInput').value;
+      showToast('Authenticating staff session...');
+      setTimeout(() => {
+        window.location.href = 'admin.html';
+      }, 700);
+    }
+
+    // Auto-fill existing profile if already saved
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedProfile = JSON.parse(localStorage.getItem('sm_customer_profile'));
+      if (savedProfile) {
+        document.getElementById('custNameInput').value = savedProfile.name || '';
+        document.getElementById('custPhoneInput').value = savedProfile.phone || '';
+        document.getElementById('custEmailInput').value = savedProfile.email || '';
+        document.getElementById('custAddressInput').value = savedProfile.address || '';
+      }
+    });
   </script>
 </body>
 </html>

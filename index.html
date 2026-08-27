@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ShopMarkets — Curated D2C Marketplace & Technical Carry</title>
   <meta name="description" content="ShopMarkets is an engineered D2C marketplace for precision timepieces, weatherproof urban carry, and artisan fragrances across India.">
-  
-  <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
-  <!-- Top Announcement Notification -->
+  <!-- Top Announcement -->
   <div class="top-notice-bar">
     <div class="notice-inner">
       <span class="pill">Festive Live</span>
@@ -23,7 +21,7 @@
     </div>
   </div>
 
-  <!-- Main Sticky Marketplace Navigation -->
+  <!-- Main Marketplace Header -->
   <header class="main-header">
     <div class="container header-inner">
       <a href="index.html" class="brand-wrap">
@@ -41,7 +39,7 @@
           <input type="text" id="globalSearchInput" placeholder="Search by brand, category, or specifications (e.g. Sapphire, Cordura)...">
         </div>
 
-        <!-- Search Suggestions Overlay Flyout -->
+        <!-- Search Flyout -->
         <div class="search-flyout" id="searchSuggestionsFlyout">
           <div class="search-section-label">Recent Searches</div>
           <div class="history-tags-grid">
@@ -54,15 +52,18 @@
         </div>
       </div>
 
-      <!-- Action Icons -->
+      <!-- Actions & Greeting -->
       <div class="header-actions">
-        <a href="customer.html" class="nav-icon-btn" title="Client Hub">
-          <i class="far fa-user"></i>
+        <!-- User Greeting Link (Hi, Adnan / Sign In) -->
+        <a href="login.html" id="headerUserGreeting" class="user-greeting-btn" title="Account Access">
+          <i class="far fa-user"></i> <span>Sign In</span>
         </a>
+
         <button class="nav-icon-btn" onclick="toggleDrawer('wishlistDrawer', true)" title="Wishlist">
           <i class="far fa-heart"></i>
           <span class="counter-badge wishlist-badge-num">0</span>
         </button>
+
         <button class="nav-icon-btn" onclick="toggleDrawer('cartDrawer', true)" title="Shopping Bag">
           <i class="fas fa-bag-shopping"></i>
           <span class="counter-badge cart-badge-num">0</span>
@@ -71,7 +72,7 @@
     </div>
   </header>
 
-  <!-- Mega Menu Category Bar -->
+  <!-- Category Nav Bar -->
   <nav class="category-nav-bar">
     <div class="container">
       <ul class="mega-nav-list">
@@ -82,21 +83,8 @@
         </li>
         <li class="mega-nav-item">
           <a href="#catalog" class="mega-nav-link" onclick="CURRENT_FILTER.category='electronics'; renderMarketplaceCatalog();">
-            <i class="fas fa-clock"></i> Timepieces & Audio <i class="fas fa-chevron-down" style="font-size:0.6rem;"></i>
+            <i class="fas fa-clock"></i> Timepieces & Audio
           </a>
-          <div class="mega-dropdown-menu">
-            <div class="dropdown-col">
-              <h5>Timepieces</h5>
-              <a href="#catalog">Automatic Watches</a>
-              <a href="#catalog">Chronographs</a>
-              <a href="#catalog">Sapphire Field Watches</a>
-            </div>
-            <div class="dropdown-col">
-              <h5>Smart Audio</h5>
-              <a href="#catalog">Studio ANC Headphones</a>
-              <a href="#catalog">Hi-Res IEMs</a>
-            </div>
-          </div>
         </li>
         <li class="mega-nav-item">
           <a href="#catalog" class="mega-nav-link" onclick="CURRENT_FILTER.category='fashion'; renderMarketplaceCatalog();">
@@ -121,18 +109,16 @@
   <main class="container">
     <section class="hero-marketplace">
       <div class="hero-grid-layout">
-        <!-- Main Banner -->
         <div class="hero-main-banner">
           <span class="hero-badge-pill">ShopMarkets Exclusive Batch</span>
           <h1 class="hero-heading">Engineered Carry & High-Utility Essentials.</h1>
-          <p class="hero-desc">Direct-to-consumer online marketplace connecting discerning buyers with small-batch watchmakers, technical luggage crafters, and perfumers.</p>
+          <p class="hero-desc">Direct-to-consumer marketplace connecting discerning buyers with precision watchmakers, technical luggage crafters, and perfumers.</p>
           <div class="hero-btn-group">
             <a href="#catalog" class="btn-hero-primary">Explore Releases <i class="fas fa-arrow-right"></i></a>
             <a href="customer.html#orders" class="btn-hero-primary" style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);">Track Shipment</a>
           </div>
         </div>
 
-        <!-- Flash Deal Counter Card -->
         <div class="hero-side-card">
           <div>
             <span style="font-size:0.75rem; font-weight:800; color:var(--status-danger); text-transform:uppercase;">Flash Sale Expiring</span>
@@ -146,26 +132,6 @@
           </div>
           <button class="btn-card-add" style="margin-top:20px; background:var(--accent-secondary); color:#fff;" onclick="openQuickView('sm-01')">View Flash Offer</button>
         </div>
-      </div>
-    </section>
-
-    <!-- Value Propositions -->
-    <section class="benefits-grid">
-      <div class="benefit-card">
-        <div class="benefit-icon"><i class="fas fa-truck-fast"></i></div>
-        <div class="benefit-text"><h4>Air Express Shipping</h4><p>Free delivery on orders over ₹999</p></div>
-      </div>
-      <div class="benefit-card">
-        <div class="benefit-icon"><i class="fas fa-shield-halved"></i></div>
-        <div class="benefit-text"><h4>2-Year Official Warranty</h4><p>Direct manufacturer coverage</p></div>
-      </div>
-      <div class="benefit-card">
-        <div class="benefit-icon"><i class="fas fa-rotate-left"></i></div>
-        <div class="benefit-text"><h4>7-Day No-Hassle Return</h4><p>Doorstep inspection & refunds</p></div>
-      </div>
-      <div class="benefit-card">
-        <div class="benefit-icon"><i class="fas fa-lock"></i></div>
-        <div class="benefit-text"><h4>Secure Encrypted Checkout</h4><p>Cash on Delivery & UPI enabled</p></div>
       </div>
     </section>
 
@@ -223,7 +189,7 @@
   </main>
 
   <!-- Slide-Over Shopping Drawer -->
-  <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer('cartDrawer', false); toggleDrawer('wishlistDrawer', false);"></div>
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer('cartDrawer', false)"></div>
   <aside class="drawer-panel" id="cartDrawer">
     <div class="drawer-header">
       <h3 style="font-size: 1.1rem; font-weight: 800;">Your Shopping Bag</h3>
@@ -259,7 +225,7 @@
     <button style="background: var(--accent-primary); color: #fff; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 0.8rem; font-weight: 700;" onclick="showToast('Loading product comparison view...')">Compare Now</button>
   </div>
 
-  <!-- Quick View Modal -->
+  <!-- Quick View / Product Detail Modal -->
   <div class="modal-overlay" id="quickViewModal">
     <div class="modal-content-card">
       <button class="modal-close-btn" onclick="closeModal('quickViewModal')"><i class="fas fa-xmark"></i></button>
@@ -279,7 +245,7 @@
   </nav>
 
   <script src="products.js"></script>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
   <script>
     function toggleBrandFilter(brand, checked) {
       if (checked) {

@@ -168,6 +168,23 @@
         return;
       }
 
+
+      // Customer profile load & auto-fill logic
+document.addEventListener('DOMContentLoaded', () => {
+  renderCustomerOrders();
+  
+  const savedProfile = JSON.parse(localStorage.getItem('sm_customer_profile'));
+  if (savedProfile) {
+    if (document.getElementById('chkName')) document.getElementById('chkName').value = savedProfile.name || '';
+    if (document.getElementById('chkPhone')) document.getElementById('chkPhone').value = savedProfile.phone || '';
+    if (document.getElementById('chkAddress')) document.getElementById('chkAddress').value = savedProfile.address || '';
+  }
+
+  if (window.location.hash === '#checkout') {
+    switchTab('checkout', document.querySelectorAll('.hub-menu-btn')[3]);
+  }
+});
+
       const subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
       const newOrder = {
         orderId: 'SM-' + Math.floor(100000 + Math.random() * 900000),

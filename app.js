@@ -1,9 +1,7 @@
 /**
  * SHOPMARKETS PRODUCTION JAVASCRIPT CORE ENGINE
- * Implements Search, Filtering, Comparison, QuickView, Cart, Wishlist, Coupons, and Dark Mode.
  */
 
-// Global State
 let CURRENT_FILTER = {
   category: "all",
   brands: [],
@@ -11,12 +9,12 @@ let CURRENT_FILTER = {
   sortBy: "featured"
 };
 
-// State Retrieval
+// State Helpers
 function getDbProducts() { return JSON.parse(localStorage.getItem('sm_products_db')) || SM_DATA.products; }
 function getCart() { return JSON.parse(localStorage.getItem('sm_cart_db')) || []; }
 function getWishlist() { return JSON.parse(localStorage.getItem('sm_wishlist_db')) || []; }
 function getCompare() { return JSON.parse(localStorage.getItem('sm_compare_db')) || []; }
-function getRecentSearches() { return JSON.parse(localStorage.getItem('sm_search_history')) || []; }
+function getCustomerProfile() { return JSON.parse(localStorage.getItem('sm_customer_profile')) || null; }
 function getAppliedCoupon() { return JSON.parse(localStorage.getItem('sm_applied_coupon')) || null; }
 
 // Toast Alert Dispatcher
@@ -42,7 +40,24 @@ function toggleThemeMode() {
   showToast(`Switched to ${next} theme mode`);
 }
 
-// Catalog Renderer
+// User Profile Display in Header
+function renderUserGreeting() {
+  const userGreetingElem = document.getElementById('headerUserGreeting');
+  const profile = getCustomerProfile();
+  if (userGreetingElem) {
+    if (profile && profile.name) {
+      const firstName = profile.name.split(' ')[0];
+      userGreetingElem.innerHTML = `<i class="fas fa-user-check" style="color: var(--status-success);"></i> <span>Hi, ${firstName}</span>`;
+      userGreetingElem.title = `Logged in as ${profile.name}`;
+      userGreetingElem.href = "customer.html";
+    } else {
+      userGreetingElem.innerHTML = `<i class="far fa-user"></i> <span>Sign In</span>`;
+      userGreetingElem.href = "login.html";
+    }
+  }
+}
+
+// Catalog Renderer with Clickable Image & Buy Now
 function renderMarketplaceCatalog() {
   const grid = document.getElementById('productCatalogGrid');
   if (!grid) return;
@@ -59,7 +74,6 @@ function renderMarketplaceCatalog() {
     return matchCategory && matchBrand && matchPrice && matchSearch;
   });
 
-  // Sorting
   if (CURRENT_FILTER.sortBy === "price-low") filtered.sort((a,b) => a.price - b.price);
   if (CURRENT_FILTER.sortBy === "price-high") filtered.sort((a,b) => b.price - a.price);
   if (CURRENT_FILTER.sortBy === "rating") filtered.sort((a,b) => b.rating - a.rating);
@@ -72,8 +86,8 @@ function renderMarketplaceCatalog() {
       <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md);">
         <i class="fas fa-box-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 16px;"></i>
         <h3 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 8px;">No matching items discovered</h3>
-        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Try adjusting your filters, price range, or search keywords.</p>
-        <button class="btn-hero-primary" onclick="resetFilters()">Reset All Filters</button>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Try adjusting your filters or search keywords.</p>
+        <button class="btn-hero-primary" onclick="CURRENT_FILTER={category:'all',brands:[],maxPrice:10000,sortBy:'featured'}; renderMarketplaceCatalog();">Reset Filters</button>
       </div>
     `;
     return;
@@ -85,10 +99,11 @@ function renderMarketplaceCatalog() {
     const isWishlisted = wishlist.includes(item.id);
     return `
       <article class="product-card">
-        <div class="card-media-wrap">
+        <!-- Clicking the image opens full product details -->
+        <div class="card-media-wrap" onclick="openQuickView('${item.id}')" style="cursor: pointer;">
           <img src="${item.images[0]}" alt="${item.title}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=80'">
           ${item.tag ? `<span class="card-badge-pill">${item.tag}</span>` : ''}
-          <div class="card-floating-actions">
+          <div class="card-floating-actions" onclick="event.stopPropagation()">
             <button class="floating-action-btn" title="Wishlist" onclick="toggleWishlist('${item.id}')">
               <i class="${isWishlisted ? 'fas fa-heart' : 'far fa-heart'}" style="${isWishlisted ? 'color: #ef4444;' : ''}"></i>
             </button>
@@ -100,34 +115,152 @@ function renderMarketplaceCatalog() {
             </button>
           </div>
         </div>
+
         <div class="card-info">
           <div class="card-brand-row">
             <span>${item.brand}</span>
-            <span style="color: ${item.stock < 10 ? 'var(--status-danger)' : 'var(--status-success)'};">
+            <span style="color: ${item.stock < 10 ? 'var(--status-danger)' : 'var(--status-success)'}; font-weight: 700;">
               ${item.stock < 10 ? `Only ${item.stock} left` : 'In Stock'}
             </span>
           </div>
-          <h3 class="card-title">${item.title}</h3>
+          <!-- Title also clickable -->
+          <h3 class="card-title" onclick="openQuickView('${item.id}')" style="cursor: pointer;">${item.title}</h3>
+          
           <div class="rating-star-row">
             <i class="fas fa-star"></i>
             <strong>${item.rating}</strong>
             <span style="color: var(--text-muted);">(${item.reviewCount})</span>
           </div>
+
           <div class="price-stock-row">
             <span class="current-price">₹${item.price.toLocaleString()}</span>
             <span class="discount-price">₹${item.originalPrice.toLocaleString()}</span>
             <span class="save-pill">${item.discountPercent}% OFF</span>
           </div>
-          <button class="btn-card-add" onclick="addToCart('${item.id}')">
-            <i class="fas fa-bag-shopping"></i> Add to Bag
-          </button>
+
+          <!-- Dual Actions: Add to Bag & Buy Now -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: auto;">
+            <button class="btn-card-add" onclick="addToCart('${item.id}')" style="padding: 10px 8px; font-size: 0.82rem;">
+              <i class="fas fa-bag-shopping"></i> Add to Bag
+            </button>
+            <button class="btn-hero-primary" onclick="buyNowDirect('${item.id}')" style="padding: 10px 8px; font-size: 0.82rem; justify-content: center; border-radius: var(--radius-sm);">
+              <i class="fas fa-bolt"></i> Buy Now
+            </button>
+          </div>
         </div>
       </article>
     `;
   }).join('');
 }
 
-// Cart State & Drawer Actions
+// Instant Buy Now Action (Direct to Checkout)
+function buyNowDirect(productId) {
+  const products = getDbProducts();
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+
+  let cart = getCart();
+  const existing = cart.find(c => c.id === productId);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ ...product, qty: 1 });
+  }
+
+  localStorage.setItem('sm_cart_db', JSON.stringify(cart));
+  updateBadges();
+  showToast(`Proceeding to instant checkout with ${product.title}...`, "fa-bolt");
+  
+  setTimeout(() => {
+    window.location.href = "customer.html#checkout";
+  }, 400);
+}
+
+// Quick View / Product Detail Modal (Contains Guarantee Badges & Buy Now)
+function openQuickView(productId) {
+  const products = getDbProducts();
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+
+  const modalBody = document.getElementById('quickViewModalBody');
+  if (!modalBody) return;
+
+  modalBody.innerHTML = `
+    <div style="display: grid; grid-template-columns: 1fr 1.1fr; gap: 32px; padding: 28px;">
+      <!-- Image Gallery -->
+      <div>
+        <div style="aspect-ratio: 1/1; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); background: var(--bg-muted);">
+          <img id="qvMainImg" src="${product.images[0]}" alt="${product.title}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 12px; overflow-x: auto;">
+          ${product.images.map(img => `
+            <img src="${img}" onclick="document.getElementById('qvMainImg').src='${img}'" style="width: 60px; height: 60px; border-radius: var(--radius-xs); object-fit: cover; cursor: pointer; border: 2px solid var(--border-color);">
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Details & Guarantee Badges -->
+      <div style="display: flex; flex-direction: column;">
+        <span style="font-size: 0.8rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase;">${product.brand}</span>
+        <h2 style="font-size: 1.45rem; font-weight: 800; margin: 4px 0 10px; line-height: 1.25;">${product.title}</h2>
+        
+        <div class="rating-star-row" style="margin-bottom: 12px;">
+          <i class="fas fa-star" style="color: #f59e0b;"></i>
+          <strong>${product.rating}</strong>
+          <span style="color: var(--text-muted);">(${product.reviewCount} customer reviews)</span>
+        </div>
+
+        <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;">
+          <span style="font-size: 1.6rem; font-weight: 800;">₹${product.price.toLocaleString()}</span>
+          <span style="text-decoration: line-through; color: var(--text-muted); font-size: 0.95rem;">₹${product.originalPrice.toLocaleString()}</span>
+          <span class="save-pill" style="font-size: 0.8rem;">Save ${product.discountPercent}%</span>
+        </div>
+
+        <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 18px;">${product.description}</p>
+
+        <!-- CTA Action Buttons -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+          <button class="btn-card-add" onclick="addToCart('${product.id}'); closeModal('quickViewModal');" style="padding: 12px; font-weight: 800;">
+            <i class="fas fa-bag-shopping"></i> Add to Bag
+          </button>
+          <button class="btn-hero-primary" onclick="buyNowDirect('${product.id}')" style="justify-content: center; padding: 12px; border-radius: var(--radius-sm);">
+            <i class="fas fa-bolt"></i> Buy Now
+          </button>
+        </div>
+
+        <!-- Product Guarantee Badges Section -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem;">
+            <i class="fas fa-truck-fast" style="color: var(--accent-primary); font-size: 1.1rem;"></i>
+            <div><strong>Air Express Shipping</strong><div style="color: var(--text-muted); font-size: 0.72rem;">Free above ₹999</div></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem;">
+            <i class="fas fa-shield-halved" style="color: var(--status-success); font-size: 1.1rem;"></i>
+            <div><strong>2-Year Warranty</strong><div style="color: var(--text-muted); font-size: 0.72rem;">Direct coverage</div></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem;">
+            <i class="fas fa-rotate-left" style="color: var(--status-warning); font-size: 1.1rem;"></i>
+            <div><strong>7-Day Return</strong><div style="color: var(--text-muted); font-size: 0.72rem;">Doorstep inspection</div></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem;">
+            <i class="fas fa-lock" style="color: var(--accent-primary); font-size: 1.1rem;"></i>
+            <div><strong>Secure Checkout</strong><div style="color: var(--text-muted); font-size: 0.72rem;">COD & UPI enabled</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('quickViewModal').classList.add('active');
+  document.body.style.overflow = 'hidden'; // Lock background scroll
+}
+
+function closeModal(id) {
+  const m = document.getElementById(id);
+  if (m) m.classList.remove('active');
+  document.body.style.overflow = 'auto';
+}
+
 function addToCart(productId, qty = 1) {
   const products = getDbProducts();
   const product = products.find(p => p.id === productId);
@@ -222,7 +355,6 @@ function updatePriceSummary(subtotal) {
   if (document.getElementById('drawerGrandTotal')) document.getElementById('drawerGrandTotal').innerText = `₹${grandTotal.toLocaleString()}`;
 }
 
-// Coupons
 function applyCouponCode() {
   const input = document.getElementById('couponCodeInput');
   if (!input) return;
@@ -239,7 +371,6 @@ function applyCouponCode() {
   renderCartDrawer();
 }
 
-// Wishlist System
 function toggleWishlist(productId) {
   let wishlist = getWishlist();
   if (wishlist.includes(productId)) {
@@ -254,7 +385,6 @@ function toggleWishlist(productId) {
   renderMarketplaceCatalog();
 }
 
-// Comparison Bar
 function toggleCompare(productId) {
   let compare = getCompare();
   if (compare.includes(productId)) {
@@ -262,7 +392,7 @@ function toggleCompare(productId) {
     showToast("Removed from comparison");
   } else {
     if (compare.length >= 3) {
-      showToast("You can compare maximum 3 items", "fa-triangle-exclamation");
+      showToast("Maximum 3 items allowed in comparison", "fa-triangle-exclamation");
       return;
     }
     compare.push(productId);
@@ -284,49 +414,6 @@ function renderCompareDock() {
   }
 }
 
-// Quick View Modal
-function openQuickView(productId) {
-  const products = getDbProducts();
-  const product = products.find(p => p.id === productId);
-  if (!product) return;
-
-  const modalBody = document.getElementById('quickViewModalBody');
-  if (!modalBody) return;
-
-  modalBody.innerHTML = `
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; padding: 32px;">
-      <div>
-        <img id="qvMainImg" src="${product.images[0]}" alt="${product.title}" style="width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-        <div style="display: flex; gap: 8px; margin-top: 12px;">
-          ${product.images.map(img => `
-            <img src="${img}" onclick="document.getElementById('qvMainImg').src='${img}'" style="width: 50px; height: 50px; border-radius: var(--radius-xs); object-fit: cover; cursor: pointer; border: 1px solid var(--border-color);">
-          `).join('')}
-        </div>
-      </div>
-      <div>
-        <span style="font-size: 0.8rem; font-weight: 800; color: var(--accent-primary); text-transform: uppercase;">${product.brand}</span>
-        <h2 style="font-size: 1.4rem; font-weight: 800; margin: 6px 0 12px;">${product.title}</h2>
-        <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px;">
-          <span style="font-size: 1.5rem; font-weight: 800;">₹${product.price.toLocaleString()}</span>
-          <span style="text-decoration: line-through; color: var(--text-muted);">₹${product.originalPrice.toLocaleString()}</span>
-        </div>
-        <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">${product.description}</p>
-        <button class="btn-hero-primary" style="width: 100%; justify-content: center;" onclick="addToCart('${product.id}'); closeModal('quickViewModal');">
-          <i class="fas fa-bag-shopping"></i> Add to Bag
-        </button>
-      </div>
-    </div>
-  `;
-
-  document.getElementById('quickViewModal').classList.add('active');
-}
-
-// Modal Helpers
-function closeModal(id) {
-  const m = document.getElementById(id);
-  if (m) m.classList.remove('active');
-}
-
 function toggleDrawer(id, open) {
   const d = document.getElementById(id);
   const backdrop = document.getElementById('drawerBackdrop');
@@ -334,13 +421,14 @@ function toggleDrawer(id, open) {
   if (open) {
     if (backdrop) backdrop.classList.add('active');
     d.classList.add('active');
+    document.body.style.overflow = 'hidden';
   } else {
     if (backdrop) backdrop.classList.remove('active');
     d.classList.remove('active');
+    document.body.style.overflow = 'auto';
   }
 }
 
-// Badges
 function updateBadges() {
   const cart = getCart();
   const wishlist = getWishlist();
@@ -350,7 +438,6 @@ function updateBadges() {
   document.querySelectorAll('.wishlist-badge-num').forEach(b => b.innerText = wishlist.length);
 }
 
-// Search Flyout Suggestion Engine
 function setupSmartSearch() {
   const input = document.getElementById('globalSearchInput');
   const flyout = document.getElementById('searchSuggestionsFlyout');
@@ -387,7 +474,6 @@ function setupSmartSearch() {
   });
 }
 
-// Flash Deals Real Countdown
 function startDealsCountdown() {
   const end = Date.now() + 86400000 * 2;
   setInterval(() => {
@@ -406,11 +492,20 @@ function startDealsCountdown() {
   }, 1000);
 }
 
+// Global Keyboard Shortcuts (Escape to close modals & drawers)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal('quickViewModal');
+    toggleDrawer('cartDrawer', false);
+  }
+});
+
 // Bootstrapping
 document.addEventListener('DOMContentLoaded', () => {
   const theme = localStorage.getItem('sm_theme_mode') || 'light';
   document.documentElement.setAttribute('data-theme', theme);
   
+  renderUserGreeting();
   updateBadges();
   renderMarketplaceCatalog();
   setupSmartSearch();
