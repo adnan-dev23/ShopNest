@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Dashboard — ShopNest</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .dash-wrap { max-width: 1100px; margin: 30px auto 60px; }
+    .dash-header {
+      background: var(--aura-surface); border: 1px solid var(--aura-border);
+      border-radius: var(--radius-md); padding: 25px; margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;
+    }
+    .dash-tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+    .dash-tab-btn {
+      background: var(--aura-surface); border: 1px solid var(--aura-border);
+      padding: 10px 20px; border-radius: var(--radius-full); font-family: inherit;
+      font-size: 0.9rem; font-weight: 600; color: var(--aura-subtext); cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .dash-tab-btn.active { background: var(--aura-primary); color: #ffffff; border-color: var(--aura-primary); }
+    .dash-panel { background: var(--aura-surface); border: 1px solid var(--aura-border); border-radius: var(--radius-md); padding: 25px; }
+    
+    .order-card {
+      border: 1px solid var(--aura-border); border-radius: var(--radius-sm);
+      padding: 20px; margin-bottom: 16px; transition: border 0.15s ease;
+    }
+    .order-card:hover { border-color: var(--aura-border-dark); }
+    .order-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid var(--aura-border); padding-bottom: 12px; margin-bottom: 15px;
+    }
+    
+    /* Live Order Stepper */
+    .stepper { display: flex; justify-content: space-between; position: relative; margin: 30px 0 10px; }
+    .stepper::before {
+      content: ''; position: absolute; top: 14px; left: 0; right: 0;
+      height: 3px; background: var(--aura-muted); z-index: 1;
+    }
+    .stepper-progress {
+      position: absolute; top: 14px; left: 0;
+      height: 3px; background: var(--aura-primary); z-index: 2; transition: width 0.3s ease;
+    }
+    .step-node {
+      position: relative; z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    }
+    .step-circle {
+      width: 30px; height: 30px; border-radius: var(--radius-full);
+      background: var(--aura-surface); border: 2px solid var(--aura-border);
+      display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--aura-subtext);
+    }
+    .step-node.active .step-circle { background: var(--aura-primary); border-color: var(--aura-primary); color: #ffffff; }
+    .step-label { font-size: 0.75rem; font-weight: 600; color: var(--aura-subtext); }
+    .step-node.active .step-label { color: var(--aura-text); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand-logo">
+        <span class="brand-icon">SN</span>
+        <span class="brand-name">ShopNest</span>
+      </a>
+      <a href="index.html" class="icon-btn" title="Return to Shop"><i class="fas fa-store"></i></a>
+    </div>
+  </header>
+
+  <main class="container dash-wrap">
+    <div class="dash-header">
+      <div>
+        <h1 style="font-size: 1.4rem; font-weight: 800;">My Client Space</h1>
+        <p style="font-size: 0.85rem; color: var(--aura-subtext); margin-top: 2px;">Track orders, review bag items, and saved wishlists.</p>
+      </div>
+      <a href="index.html" class="cat-pill active" style="text-decoration:none;"><i class="fas fa-plus"></i> Continue Shopping</a>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="dash-tabs">
+      <button class="dash-tab-btn active" onclick="switchCustomerView('orders')"><i class="fas fa-box"></i> Orders (<span id="custOrdersCount">0</span>)</button>
+      <button class="dash-tab-btn" onclick="switchCustomerView('cart')"><i class="fas fa-bag-shopping"></i> Shopping Bag (<span id="custBagCount">0</span>)</button>
+      <button class="dash-tab-btn" onclick="switchCustomerView('wishlist')"><i class="fas fa-heart"></i> Saved Wishlist</button>
+    </div>
+
+    <!-- Panel 1: Placed Orders with Live Visual Tracker -->
+    <div id="panelOrders" class="dash-panel">
+      <h3 style="font-size: 1.1rem; margin-bottom: 20px;">Order History & Tracking</h3>
+      <div id="ordersListContainer"></div>
+    </div>
+
+    <!-- Panel 2: Cart Checkout View -->
+    <div id="panelCart" class="dash-panel" style="display:none;">
+      <h3 style="font-size: 1.1rem; margin-bottom: 20px;">Current Bag Items</h3>
+      <div id="cartListContainer"></div>
+      <div id="cartCheckoutBlock" style="margin-top:25px; border-top: 1px solid var(--aura-border); padding-top: 20px; display:none;">
+        <div style="display:flex; justify-content:space-between; margin-bottom: 18px; font-size:1.1rem; font-weight:700;">
+          <span>Total Payable</span>
+          <span id="cartPayableTotal" style="color:var(--aura-text);">₹0</span>
+        </div>
+        <form id="directCheckoutForm">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+            <input type="text" id="shipName" placeholder="Full Name" required style="padding:10px; border:1px solid var(--aura-border); border-radius:var(--radius-xs);">
+            <input type="tel" id="shipPhone" placeholder="10-Digit Mobile" pattern="[0-9]{10}" required style="padding:10px; border:1px solid var(--aura-border); border-radius:var(--radius-xs);">
+          </div>
+          <textarea id="shipAddress" rows="2" placeholder="Delivery Address & Landmark" required style="width:100%; padding:10px; border:1px solid var(--aura-border); border-radius:var(--radius-xs); margin-bottom:12px;"></textarea>
+          <input type="text" id="shipPin" pattern="[0-9]{6}" placeholder="6-Digit Pincode" required style="width:100%; padding:10px; border:1px solid var(--aura-border); border-radius:var(--radius-xs); margin-bottom:18px;">
+          <button type="submit" class="btn-primary"><i class="fas fa-check"></i> Place Order (Cash on Delivery)</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Panel 3: Wishlist Grid -->
+    <div id="panelWishlist" class="dash-panel" style="display:none;">
+      <h3 style="font-size: 1.1rem; margin-bottom: 20px;">Saved Favorites</h3>
+      <div class="product-grid" id="wishlistGrid"></div>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    function switchCustomerView(tab) {
+      document.getElementById('panelOrders').style.display = tab === 'orders' ? 'block' : 'none';
+      document.getElementById('panelCart').style.display = tab === 'cart' ? 'block' : 'none';
+      document.getElementById('panelWishlist').style.display = tab === 'wishlist' ? 'block' : 'none';
+
+      const btns = document.querySelectorAll('.dash-tab-btn');
+      btns[0].classList.toggle('active', tab === 'orders');
+      btns[1].classList.toggle('active', tab === 'cart');
+      btns[2].classList.toggle('active', tab === 'wishlist');
+    }
+
+    function renderCustomerPortal() {
+      // 1. Render Orders with Tracker
+      const orders = getStorage('shopnest_orders', []);
+      document.getElementById('custOrdersCount').textContent = orders.length;
+      const orderBox = document.getElementById('ordersListContainer');
+
+      if (orders.length === 0) {
+        orderBox.innerHTML = `<p style="text-align:center; padding:40px; color:var(--aura-subtext);">No orders placed yet.</p>`;
+      } else {
+        orderBox.innerHTML = orders.map(order => {
+          const status = order.status || 'Placed';
+          let progress = '0%', s1 = 'active', s2 = '', s3 = '', s4 = '';
+          if (status === 'Shipped') { progress = '33%'; s2 = 'active'; }
+          else if (status === 'Out for Delivery') { progress = '66%'; s2 = 'active'; s3 = 'active'; }
+          else if (status === 'Delivered') { progress = '100%'; s2 = 'active'; s3 = 'active'; s4 = 'active'; }
+
+          return `
+          <div class="order-card">
+            <div class="order-header">
+              <div>
+                <strong>${order.orderId || 'SN-ORD'}</strong>
+                <div style="font-size:0.78rem; color:var(--aura-subtext);">${order.timestamp}</div>
+              </div>
+              <div style="text-align:right;">
+                <span class="price-current">₹${Number(order.price).toLocaleString('en-IN')}</span>
+                <div style="font-size:0.75rem; color:var(--aura-success); font-weight:700;">Cash on Delivery</div>
+              </div>
+            </div>
+            <div style="font-weight:600; margin-bottom:4px;">${order.productName}</div>
+            <div style="font-size:0.82rem; color:var(--aura-subtext);">Recipient: ${order.name} | PIN: ${order.pincode}</div>
+
+            <div class="stepper">
+              <div class="stepper-progress" style="width: ${progress};"></div>
+              <div class="step-node ${s1}"><div class="step-circle"><i class="fas fa-check"></i></div><span class="step-label">Placed</span></div>
+              <div class="step-node ${s2}"><div class="step-circle">${s2 ? '<i class="fas fa-check"></i>' : '2'}</div><span class="step-label">Shipped</span></div>
+              <div class="step-node ${s3}"><div class="step-circle">${s3 ? '<i class="fas fa-check"></i>' : '3'}</div><span class="step-label">Out for Delivery</span></div>
+              <div class="step-node ${s4}"><div class="step-circle">${s4 ? '<i class="fas fa-check"></i>' : '4'}</div><span class="step-label">Delivered</span></div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      // 2. Render Cart
+      const cart = getStorage('aura_cart', []);
+      document.getElementById('custBagCount').textContent = cart.length;
+      const cartBox = document.getElementById('cartListContainer');
+      const checkoutBox = document.getElementById('cartCheckoutBlock');
+
+      if (cart.length === 0) {
+        cartBox.innerHTML = `<p style="text-align:center; padding:30px; color:var(--aura-subtext);">Your shopping bag is empty.</p>`;
+        checkoutBox.style.display = 'none';
+      } else {
+        let total = 0;
+        cartBox.innerHTML = cart.map((item, idx) => {
+          total += item.price;
+          return `
+          <div class="cart-item-card">
+            <img src="${item.image}" class="cart-item-img">
+            <div class="cart-item-info">
+              <h4 class="cart-item-title">${item.name}</h4>
+              <span class="cart-item-price">₹${item.price.toLocaleString('en-IN')}</span>
+            </div>
+            <button onclick="removeFromCart(${idx}); renderCustomerPortal();" style="background:none; border:none; color:var(--aura-subtext); cursor:pointer;">
+              <i class="fas fa-trash-can"></i>
+            </button>
+          </div>`;
+        }).join('');
+        document.getElementById('cartPayableTotal').textContent = `₹${total.toLocaleString('en-IN')}`;
+        checkoutBox.style.display = 'block';
+      }
+    }
+
+    document.getElementById('directCheckoutForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const cart = getStorage('aura_cart', []);
+      if (cart.length === 0) return;
+
+      const orderId = "SN-" + Math.floor(100000 + Math.random() * 900000);
+      const totalAmount = cart.reduce((acc, curr) => acc + curr.price, 0);
+
+      const newOrder = {
+        orderId: orderId,
+        timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+        name: document.getElementById('shipName').value,
+        phone: document.getElementById('shipPhone').value,
+        address: document.getElementById('shipAddress').value,
+        pincode: document.getElementById('shipPin').value,
+        productName: cart.map(i => i.name).join(', '),
+        price: totalAmount,
+        status: 'Placed'
+      };
+
+      const orders = getStorage('shopnest_orders', []);
+      orders.unshift(newOrder);
+      setStorage('shopnest_orders', orders);
+      setStorage('aura_cart', []);
+
+      alert(`🎉 Order Confirmed! (Ref: ${orderId})`);
+      document.getElementById('directCheckoutForm').reset();
+      renderCustomerPortal();
+      switchCustomerView('orders');
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCustomerPortal();
+      if (window.location.hash === '#cart-view') switchCustomerView('cart');
+    });
+  </script>
+</body>
+</html>

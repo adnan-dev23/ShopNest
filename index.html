@@ -1,118 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ShoppingMarts99 - Modern Storefront</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#5a67d8">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopNest — Engineered Lifestyle & Essential Carry</title>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
-    <header class="main-header">
-        <div class="container">
-            <div class="logo animated-text">ShoppingMarts99</div>
-            <div class="search-bar">
-                <i class="fas fa-search"></i>
-                <input type="text" id="search-input" placeholder="Search for products...">
-            </div>
-            <div class="user-actions">
-                <a href="login.html" class="action-item" style="color: white; text-decoration: none;" title="Profile"><i class="far fa-user"></i></a>
-            </div>
-        </div>
-    </header>
+  <!-- Top Announcement -->
+  <div class="announcement-bar">
+    Complimentary Express Shipping On All Orders Above ₹999 | Welcome to ShopNest
+  </div>
 
-    <section class="hero-banner">
-        <div class="container">
-            <h1>Discover Amazing Deals!</h1>
-            <p>Shop the latest trends at unbeatable prices.</p>
-        </div>
+  <!-- Primary Header -->
+  <header class="main-header">
+    <div class="container header-container">
+      <a href="index.html" class="brand-logo">
+        <span class="brand-icon">SN</span>
+        <span class="brand-name">ShopNest</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="active">Collection</a>
+        <a href="customer.html">Dashboard</a>
+        <a href="about.html">About ShopNest</a>
+      </nav>
+
+      <div class="header-search">
+        <i class="fas fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="Search timepieces, carry, fragrance...">
+      </div>
+
+      <div class="header-actions">
+        <a href="login.html" class="icon-btn" title="Account Access">
+          <i class="far fa-user"></i>
+        </a>
+        <button class="icon-btn" onclick="toggleCartDrawer(true)" title="Shopping Bag">
+          <i class="fas fa-bag-shopping"></i>
+          <span class="badge-counter" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Feature -->
+  <main class="container">
+    <section class="hero-section">
+      <div class="hero-card">
+        <span class="hero-pill">SHOPNEST EXCLUSIVE RELEASES</span>
+        <h1 class="hero-title">Precision Timepieces & Technical Carry.</h1>
+        <p class="hero-subtitle">Meticulously engineered essentials crafted for modern lifestyle, daily commute, and timeless durability.</p>
+        <a href="#productGrid" class="hero-cta">Explore Catalog <i class="fas fa-arrow-right"></i></a>
+      </div>
     </section>
 
-    <nav class="controls-nav">
-        <div class="container controls-container">
-            <div class="categories" id="category-bar">
-                </div>
-            <div class="sort-options">
-                <label for="sort-select">Sort by:</label>
-                <select id="sort-select">
-                    <option value="default">Default</option>
-                    <option value="price-low-high">Price: Low to High</option>
-                    <option value="price-high-low">Price: High to Low</option>
-                </select>
-            </div>
-        </div>
-    </nav>
+    <!-- Category Filter Controls -->
+    <div class="category-filter-bar" id="categoryFilterBar"></div>
 
-    <main>
-        <div class="container">
-            <h2 id="page-title">All Products</h2>
-             <div id="loading-indicator" class="loading-indicator hidden"><div></div><div></div><div></div></div>
-            <div id="product-container" class="product-grid loading">
-                <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
-                <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
-                <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
-                <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
-                <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
-                <div class="skeleton-card"><div class="skeleton-image"></div><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
-                </div>
-        </div>
-    </main>
-
-    <footer class="main-footer">
-        <div class="container footer-content">
-            <div class="footer-links">
-                <a href="#">About Us</a> |
-                <a href="#">Contact Us</a> |
-                <a href="#">Shipping Policy</a> |
-                <a href="#">Return Policy</a>
-            </div>
-            <p class="made-by animated-text">Made by Adnan Shah</p>
-            <p>&copy; 2025 ShoppingMarts99. All Rights Reserved.</p>
-        </div>
-    </footer>
-
-    <div id="product-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button class="close-btn" title="Back"><i class="fas fa-arrow-left"></i></button>
-            <div id="modal-body">
-                </div>
-        </div>
+    <!-- Product Grid Section -->
+    <div class="section-title-wrap">
+      <h2>ShopNest Releases</h2>
     </div>
+    <div class="product-grid" id="productGrid"></div>
+  </main>
 
-    <div id="customer-form-modal" class="modal-overlay hidden">
-        <div class="form-modal-content">
-            <button class="close-btn" title="Back"><i class="fas fa-arrow-left"></i></button>
-            <h3>Enter Your Shipping Details</h3>
-            <form id="customer-form">
-                <div class="form-group">
-                    <label for="customer-name">Full Name</label>
-                    <input type="text" id="customer-name" required>
-                </div>
-                <div class="form-group">
-                    <label for="customer-phone">Phone Number</label>
-                    <input type="tel" id="customer-phone" required>
-                </div>
-                <div class="form-group">
-                    <label for="customer-address">Full Address</label>
-                    <textarea id="customer-address" rows="3" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="customer-pincode">Pincode</label>
-                    <input type="number" id="customer-pincode" required>
-                </div>
-                <button type="submit" class="order-now-btn">Place Order</button>
-            </form>
-        </div>
+  <!-- Slide-Over Shopping Drawer -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleCartDrawer(false)"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="drawer-header">
+      <h3>ShopNest Bag</h3>
+      <button onclick="toggleCartDrawer(false)" style="background:none; border:none; cursor:pointer; font-size:1.1rem;">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+    <div class="drawer-body" id="drawerBody"></div>
+    <div class="drawer-footer">
+      <div class="drawer-total-row">
+        <span>Subtotal</span>
+        <span id="drawerTotal">₹0</span>
+      </div>
+      <button class="btn-primary" onclick="window.location.href='customer.html#cart-view'">
+        Proceed to Checkout <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+  </aside>
 
-    <button id="back-to-top" class="hidden" title="Go to top"><i class="fas fa-arrow-up"></i></button>
+  <!-- Modern Dark Footer -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <h4 style="font-size:1.1rem;">ShopNest</h4>
+          <p style="max-width:300px; line-height:1.6; margin-top:10px;">Dedicated to high-utility craftsmanship, modern materials, and direct transparent retail across India.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="index.html">Timepieces</a>
+          <a href="index.html">Technical Carry</a>
+          <a href="index.html">Fragrance Series</a>
+        </div>
+        <div class="footer-col">
+          <h4>Client Care</h4>
+          <a href="customer.html">Live Order Tracking</a>
+          <a href="about.html">Shipping Guidelines</a>
+          <a href="about.html">Returns & Policies</a>
+        </div>
+        <div class="footer-col">
+          <h4>Management</h4>
+          <a href="login.html">Staff Console</a>
+          <a href="customer.html">Customer Profile</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 ShopNest. All Rights Reserved.</span>
+        <span>Curated by Adnan Shah</span>
+      </div>
+    </div>
+  </footer>
 
-    <script src="script.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
